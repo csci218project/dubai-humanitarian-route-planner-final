@@ -1,0 +1,787 @@
+/*
+  Victorian chart-room theme for the Humanitarian Route Planner.
+
+  Materials, not costume: aged parchment for the page, a green leather ledger
+  cover for the sidebar, gilt rules for frames, account-book ledgers for the
+  numbers. Colour has one job each (see ui/palette.py):
+    green  = the route / open      claret = closed / failed
+    gilt   = ornament only         sepia  = inactive
+  Base colours and fonts come from .streamlit/config.toml; this file adds the
+  textures, ornaments and the custom HTML blocks (classes start with hrp-).
+*/
+
+:root {
+  --hrp-ink: #2B2118;
+  --hrp-sepia: #6E5B45;
+  --hrp-line: #8C7A62;
+  --hrp-parchment: #ECE0C1;
+  --hrp-vellum: #F6EEDA;
+  --hrp-green: #1F4436;
+  --hrp-claret: #7B2230;
+  --hrp-gilt: #A9853A;
+  --hrp-gilt-pale: #D4B26A;
+  --hrp-text: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+  --hrp-display: 'Abril Fatface', 'Libre Caslon Text', Georgia, serif;
+}
+
+/* ---- Page: parchment with a faint grain and darker, foxed edges ---------- */
+
+.stApp {
+  /* Libre Caslon's italic turns "st" and "sp" into long-s ligatures; keep text modern. */
+  font-variant-ligatures: no-common-ligatures no-discretionary-ligatures;
+  background-color: var(--hrp-parchment);
+  background-image:
+    radial-gradient(ellipse at 50% 28%, rgba(255, 251, 238, 0.5) 0%, rgba(255, 251, 238, 0) 60%),
+    radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 55%, rgba(112, 82, 44, 0.17) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.27 0 0 0 0 0.15 0 0 0 0.10 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+[data-testid="stHeader"] {
+  background: transparent;
+}
+
+[data-testid="stMainBlockContainer"] {
+  max-width: 1360px;
+  padding-top: 2.4rem;
+}
+
+/* ---- Sidebar: green leather cover with a gilt-tooled damask ------------- */
+
+[data-testid="stSidebar"] {
+  background-color: var(--hrp-green);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cdefs%3E%3Cg id='m'%3E%3Cpath fill-rule='evenodd' d='M0-19C4.5-10.5 11-6.5 19 0C11 6.5 4.5 10.5 0 19C-4.5 10.5-11 6.5-19 0C-11-6.5-4.5-10.5 0-19ZM0-10C-2.6-5.6-5.6-2.6-10 0C-5.6 2.6-2.6 5.6 0 10C2.6 5.6 5.6 2.6 10 0C5.6-2.6 2.6-5.6 0-10Z'/%3E%3Ccircle r='2.6'/%3E%3Ccircle cy='-26' r='1.7'/%3E%3Ccircle cy='26' r='1.7'/%3E%3Ccircle cx='-26' r='1.7'/%3E%3Ccircle cx='26' r='1.7'/%3E%3C/g%3E%3C/defs%3E%3Cg fill='%23D4B26A' fill-opacity='0.085'%3E%3Cuse href='%23m' x='44' y='44'/%3E%3Cuse href='%23m' x='0' y='0'/%3E%3Cuse href='%23m' x='88' y='0'/%3E%3Cuse href='%23m' x='0' y='88'/%3E%3Cuse href='%23m' x='88' y='88'/%3E%3C/g%3E%3C/svg%3E");
+  box-shadow: inset -4px 0 0 -1px var(--hrp-gilt), inset -7px 0 0 -2px rgba(212, 178, 106, 0.55);
+}
+
+[data-testid="stSidebar"] > div,
+[data-testid="stSidebarContent"] {
+  background: transparent;
+}
+
+.hrp-side-head {
+  color: var(--hrp-gilt-pale);
+  text-align: center;
+  margin: 0.6rem 0 0.15rem;
+}
+
+.hrp-side-head span {
+  display: block;
+  font-family: var(--hrp-text);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+}
+
+.hrp-side-head .hrp-fleuron {
+  height: 10px;
+  margin-top: 0.3rem;
+  opacity: 0.85;
+}
+
+/* ---- Ornaments ---------------------------------------------------------- */
+
+.hrp-fleuron {
+  display: block;
+  width: 100%;
+  height: 16px;
+}
+
+/* ---- Masthead ----------------------------------------------------------- */
+
+.hrp-masthead {
+  text-align: center;
+  padding: 0 0 0.2rem;
+}
+
+.hrp-masthead .hrp-kicker {
+  margin: 0;
+  font-style: italic;
+  color: var(--hrp-sepia);
+  font-size: 1rem;
+}
+
+.hrp-masthead h1.hrp-title {
+  font-family: var(--hrp-display);
+  font-weight: 400;
+  font-size: clamp(2.3rem, 5vw, 3.8rem);
+  line-height: 1.04;
+  letter-spacing: 0.005em;
+  color: var(--hrp-ink);
+  margin: 0.12em 0 0.18em;
+  padding: 0;
+}
+
+.hrp-masthead .hrp-standfirst {
+  max-width: 38em;
+  margin: 0 auto;
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+
+.hrp-masthead .hrp-rule {
+  color: var(--hrp-gilt);
+  width: min(340px, 72%);
+  margin: 0.8rem auto 0;
+}
+
+/* ---- Notices and alerts ------------------------------------------------- */
+
+.hrp-notice {
+  margin: 1rem 0 0.2rem;
+  padding: 0.5rem 0.95rem;
+  border-left: 3px solid var(--hrp-claret);
+  background: rgba(123, 34, 48, 0.06);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.hrp-alert {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--hrp-claret);
+  border-left-width: 4px;
+  background: rgba(123, 34, 48, 0.07);
+  line-height: 1.55;
+}
+
+.hrp-alert-green {
+  border-color: var(--hrp-green);
+  background: rgba(31, 68, 54, 0.07);
+}
+
+/* ---- Dispatch: the headline result -------------------------------------- */
+
+.hrp-dispatch {
+  margin: 0.5rem 0 0.3rem;
+  padding: 1rem 0 0.85rem;
+  border-top: 1px solid var(--hrp-gilt);
+  border-bottom: 1px solid var(--hrp-gilt);
+}
+
+.hrp-dispatch .hrp-lead {
+  text-wrap: pretty;
+  font-size: 1.3rem;
+  line-height: 1.45;
+  margin: 0 0 0.75rem;
+  max-width: 56em;
+}
+
+.hrp-dispatch.is-failed .hrp-lead {
+  color: var(--hrp-claret);
+}
+
+.hrp-figures {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
+  margin: 0;
+}
+
+.hrp-figures > div {
+  padding: 0 1.5rem 0 0;
+  margin-right: 1.5rem;
+  border-right: 1px solid rgba(169, 133, 58, 0.65);
+}
+
+.hrp-figures > div:last-child {
+  border-right: 0;
+  margin-right: 0;
+}
+
+.hrp-figures dt {
+  font-style: italic;
+  color: var(--hrp-sepia);
+  font-size: 0.92rem;
+}
+
+.hrp-figures dd {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-variant-numeric: lining-nums;
+}
+
+.hrp-dispatch .hrp-impact {
+  margin: 0.8rem 0 0;
+  max-width: 60em;
+  line-height: 1.55;
+}
+
+/* ---- Section headings ---------------------------------------------------- */
+
+.hrp-section h2 {
+  font-family: var(--hrp-text);
+  font-weight: 700;
+  font-size: 1.45rem;
+  line-height: 1.3;
+  margin: 0;
+  padding: 0;
+}
+
+.hrp-section .hrp-section-note {
+  margin: 0.15rem 0 0;
+  font-style: italic;
+  color: var(--hrp-sepia);
+  font-size: 0.93rem;
+}
+
+/* ---- The chart frame: double gilt rule with corner flourishes ------------ */
+
+.st-key-chart_frame {
+  margin: 6px 6px 10px;
+  padding: 20px 18px 12px;
+  background-color: rgba(246, 238, 218, 0.5);
+  box-shadow: 0 0 0 1px var(--hrp-gilt), 0 0 0 5px var(--hrp-parchment), 0 0 0 6.5px var(--hrp-gilt);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23A9853A' stroke-linecap='round'%3E%3Cpath stroke-width='1.5' d='M3 45V12a9 9 0 0 1 9-9h33'/%3E%3Cpath stroke-width='0.9' d='M9 45V16a7 7 0 0 1 7-7h29'/%3E%3Cpath stroke-width='1.1' d='M15 31c0-8.8 7.2-16 16-16'/%3E%3Cpath stroke-width='0.9' d='M20.5 28c0-4.1 3.4-7.5 7.5-7.5'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23A9853A'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg transform='translate(48 0) scale(-1 1)'%3E%3Cg fill='none' stroke='%23A9853A' stroke-linecap='round'%3E%3Cpath stroke-width='1.5' d='M3 45V12a9 9 0 0 1 9-9h33'/%3E%3Cpath stroke-width='0.9' d='M9 45V16a7 7 0 0 1 7-7h29'/%3E%3Cpath stroke-width='1.1' d='M15 31c0-8.8 7.2-16 16-16'/%3E%3Cpath stroke-width='0.9' d='M20.5 28c0-4.1 3.4-7.5 7.5-7.5'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23A9853A'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg transform='translate(0 48) scale(1 -1)'%3E%3Cg fill='none' stroke='%23A9853A' stroke-linecap='round'%3E%3Cpath stroke-width='1.5' d='M3 45V12a9 9 0 0 1 9-9h33'/%3E%3Cpath stroke-width='0.9' d='M9 45V16a7 7 0 0 1 7-7h29'/%3E%3Cpath stroke-width='1.1' d='M15 31c0-8.8 7.2-16 16-16'/%3E%3Cpath stroke-width='0.9' d='M20.5 28c0-4.1 3.4-7.5 7.5-7.5'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23A9853A'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg transform='translate(48 48) scale(-1 -1)'%3E%3Cg fill='none' stroke='%23A9853A' stroke-linecap='round'%3E%3Cpath stroke-width='1.5' d='M3 45V12a9 9 0 0 1 9-9h33'/%3E%3Cpath stroke-width='0.9' d='M9 45V16a7 7 0 0 1 7-7h29'/%3E%3Cpath stroke-width='1.1' d='M15 31c0-8.8 7.2-16 16-16'/%3E%3Cpath stroke-width='0.9' d='M20.5 28c0-4.1 3.4-7.5 7.5-7.5'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23A9853A'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 46px 46px;
+  background-position: top 5px left 5px, top 5px right 5px, bottom 5px left 5px, bottom 5px right 5px;
+}
+
+/* ---- Journey strip -------------------------------------------------------- */
+
+.hrp-journey {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  margin: 0.2rem 0 0.6rem;
+  padding: 0.9rem 0.2rem 0.4rem;
+  overflow-x: auto;
+}
+
+.hrp-stop {
+  flex: 1 1 0;
+  min-width: 6.4rem;
+  max-width: 10rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hrp-roundel {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--hrp-vellum);
+  border: 2px solid var(--hrp-green);
+  color: var(--hrp-green);
+  font-weight: 700;
+  font-variant-numeric: lining-nums;
+}
+
+.hrp-stop.is-origin .hrp-roundel {
+  background: var(--hrp-green);
+  color: var(--hrp-vellum);
+  border-color: var(--hrp-gilt);
+  box-shadow: 0 0 0 2px var(--hrp-parchment), 0 0 0 3px var(--hrp-gilt);
+}
+
+.hrp-stop.is-destination .hrp-roundel {
+  background: var(--hrp-gilt);
+  color: var(--hrp-ink);
+  border-color: var(--hrp-ink);
+}
+
+.hrp-stop-name {
+  margin-top: 0.4rem;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.hrp-stop-time {
+  margin-top: 0.1rem;
+  font-style: italic;
+  color: var(--hrp-sepia);
+  font-size: 0.84rem;
+}
+
+.hrp-leg {
+  flex: 1.2 1 0;
+  min-width: 4.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hrp-leg-line {
+  --hrp-dash-colour: var(--hrp-green);
+  width: 100%;
+  height: 4px;
+  margin-top: calc(1.05rem - 2px);
+}
+
+.hrp-leg-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-top: 0.4rem;
+  color: var(--hrp-green);
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.hrp-leg-time {
+  color: var(--hrp-sepia);
+  font-size: 0.84rem;
+}
+
+/* Dash patterns in px, matching Plotly's dot/dash/dashdot/longdashdot at the
+   chart's line width, so the key and journey strip read like the chart. */
+
+.hrp-dash {
+  --hrp-dash-colour: var(--hrp-line);
+  display: inline-block;
+  flex: none;
+  width: 2.8rem;
+  height: 2.5px;
+}
+
+.hrp-dash.m-road { background: var(--hrp-dash-colour); }
+.hrp-dash.m-air { background: repeating-linear-gradient(90deg, var(--hrp-dash-colour) 0 3px, transparent 3px 6px); }
+.hrp-dash.m-sea { background: repeating-linear-gradient(90deg, var(--hrp-dash-colour) 0 9px, transparent 9px 18px); }
+.hrp-dash.m-convoy { background: repeating-linear-gradient(90deg, var(--hrp-dash-colour) 0 9px, transparent 9px 12px, var(--hrp-dash-colour) 12px 15px, transparent 15px 18px); }
+.hrp-dash.m-searoad { background: repeating-linear-gradient(90deg, var(--hrp-dash-colour) 0 15px, transparent 15px 21px, var(--hrp-dash-colour) 21px 24px, transparent 24px 30px); }
+.hrp-dash.m-closed { --hrp-dash-colour: var(--hrp-claret); height: 3px; background: repeating-linear-gradient(90deg, var(--hrp-dash-colour) 0 3px, transparent 3px 6px); }
+
+.hrp-icon {
+  flex: none;
+  vertical-align: -3px;
+}
+
+/* ---- Inspector panel (a keyed Streamlit container) ----------------------- */
+
+.st-key-inspector {
+  padding: 0.95rem 1.05rem 1.05rem;
+  background: rgba(246, 238, 218, 0.82);
+  border-top: 4px double var(--hrp-gilt);
+  border-bottom: 4px double var(--hrp-gilt);
+}
+
+.hrp-panel-title {
+  font-family: var(--hrp-text);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  margin: 0 0 0.3rem;
+  padding: 0;
+}
+
+.hrp-panel-meta {
+  margin: 0 0 0.5rem;
+  font-style: italic;
+  color: var(--hrp-sepia);
+  font-size: 0.94rem;
+}
+
+.hrp-panel-text {
+  margin: 0.45rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.hrp-status {
+  display: inline-block;
+  margin: 0 0 0.35rem;
+  padding: 0.05rem 0.6rem;
+  border: 1px solid currentColor;
+  font-style: italic;
+  font-size: 0.87rem;
+}
+
+.hrp-status-open {
+  color: var(--hrp-green);
+}
+
+.hrp-status-closed {
+  color: var(--hrp-claret);
+  background: rgba(123, 34, 48, 0.07);
+}
+
+.hrp-facts {
+  border-collapse: collapse;
+  margin-top: 0.3rem;
+  font-variant-numeric: lining-nums;
+}
+
+.hrp-facts th {
+  text-align: left;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--hrp-sepia);
+  padding: 0.12rem 1rem 0.12rem 0;
+}
+
+.hrp-facts td {
+  padding: 0.12rem 0;
+}
+
+/* ---- Key ---------------------------------------------------------------- */
+
+.hrp-key {
+  margin-top: 1.1rem;
+}
+
+.hrp-key ul {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.hrp-key li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.2rem 0;
+  font-size: 0.94rem;
+}
+
+.hrp-key-route {
+  display: inline-block;
+  flex: none;
+  width: 2.8rem;
+  height: 4px;
+  background: var(--hrp-green);
+  box-shadow: 0 0 0 3px rgba(169, 133, 58, 0.55);
+}
+
+/* ---- Ledgers: account-book tables ------------------------------------------ */
+
+.hrp-ledger-wrap {
+  overflow-x: auto;
+  margin: 0.4rem 0 0.7rem;
+}
+
+.hrp-ledger {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(246, 238, 218, 0.6);
+  font-variant-numeric: lining-nums;
+}
+
+.hrp-ledger th,
+.hrp-ledger td {
+  padding: 0.45rem 0.85rem;
+  border-bottom: 1px solid rgba(140, 122, 98, 0.35);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hrp-ledger thead th {
+  font-weight: 700;
+  border-bottom: 4px double var(--hrp-gilt);
+}
+
+.hrp-ledger tbody th {
+  text-align: left;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--hrp-sepia);
+  border-right: 4px double rgba(169, 133, 58, 0.7);
+}
+
+.hrp-ledger-legs td:nth-child(1) {
+  border-right: 4px double rgba(169, 133, 58, 0.7);
+  text-align: center;
+}
+
+.hrp-ledger-legs td:nth-child(2),
+.hrp-ledger-legs td:nth-child(3),
+.hrp-ledger-legs td:nth-child(4) {
+  text-align: left;
+  white-space: normal;
+  min-width: 8rem;
+}
+
+.hrp-ledger-legs thead th:nth-child(-n + 4) {
+  text-align: left;
+}
+
+.hrp-ledger tfoot th,
+.hrp-ledger tfoot td {
+  font-weight: 700;
+  border-top: 4px double var(--hrp-gilt);
+  border-bottom: 0;
+}
+
+.hrp-ledger tfoot th {
+  text-align: left;
+}
+
+.hrp-mode .hrp-icon {
+  color: var(--hrp-green);
+}
+
+.hrp-bad {
+  color: var(--hrp-claret);
+}
+
+.hrp-prose p {
+  max-width: 68ch;
+  line-height: 1.6;
+  margin: 0 0 0.5rem;
+}
+
+.hrp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Streamlit chrome ------------------------------------------------------ */
+
+[data-baseweb="tab-list"] {
+  gap: 1.8rem;
+  border-bottom: 1px solid var(--hrp-gilt);
+}
+
+[data-baseweb="tab"] p {
+  font-size: 1.06rem;
+}
+
+[data-baseweb="tab"][aria-selected="true"] p {
+  color: var(--hrp-green);
+  font-weight: 700;
+}
+
+[data-baseweb="tab-highlight"] {
+  background-color: var(--hrp-green);
+  height: 3px;
+}
+
+[data-testid="stBaseButton-primary"] {
+  box-shadow: inset 0 0 0 1px var(--hrp-gilt-pale);
+}
+
+[data-testid="stToast"] {
+  background: var(--hrp-vellum);
+  border: 1px solid var(--hrp-gilt);
+  color: var(--hrp-ink);
+}
+
+.hrp-footer {
+  margin: 2.4rem 0 0.4rem;
+  text-align: center;
+  font-style: italic;
+  color: var(--hrp-sepia);
+  font-size: 0.86rem;
+}
+
+/* ---- Small screens and reduced motion ------------------------------------- */
+
+@media (max-width: 640px) {
+  .hrp-dispatch .hrp-lead {
+    font-size: 1.12rem;
+  }
+  .hrp-figures > div {
+    border-right: 0;
+    padding-right: 0;
+    margin-right: 1.2rem;
+  }
+  .hrp-figures dd {
+    font-size: 1.25rem;
+  }
+  .st-key-chart_frame {
+    padding: 12px 6px 6px;
+    background-size: 30px 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- Opening sequence: the globe turns as you scroll (ui/sequence.py) ------ */
+
+.hrp-hero {
+  position: relative;
+  height: 250vh;            /* 100vh pinned stage + 150vh of scrolling to play it */
+  margin: -2.4rem 0 1.4rem; /* cancel the page's top padding so the stage pins flush */
+}
+
+.hrp-hero-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.hrp-hero-canvas,
+.hrp-hero-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* The canvas feathers its own edges (ui/sequence.py); the fallback image uses a CSS mask. */
+.hrp-hero-poster {
+  -webkit-mask-image: radial-gradient(ellipse 66% 72% at 50% 46%, #000 50%, transparent 100%);
+  mask-image: radial-gradient(ellipse 66% 72% at 50% 46%, #000 50%, transparent 100%);
+  object-fit: cover;
+}
+
+.hrp-hero.is-ready .hrp-hero-poster {
+  visibility: hidden;
+}
+
+.hrp-hero-title {
+  position: absolute;
+  left: clamp(0.5rem, 3vw, 2.5rem);
+  bottom: clamp(6rem, 16vh, 10rem);
+  max-width: min(46rem, 92%);
+}
+
+.hrp-hero-title .hrp-kicker {
+  display: inline-block;
+  margin: 0 0 0.5rem;
+  padding: 0.1rem 0.55rem;
+  font-style: italic;
+  color: var(--hrp-ink);
+  background: rgba(236, 224, 193, 0.86);
+}
+
+.hrp-hero-title h1.hrp-title {
+  font-family: var(--hrp-display);
+  font-weight: 400;
+  font-size: clamp(3rem, 8vw, 7.4rem);
+  line-height: 0.94;
+  color: var(--hrp-ink);
+  margin: 0;
+  padding: 0;
+  /* A parchment halo keeps the title legible where it crosses the globe. */
+  text-shadow: 0 0 18px rgba(236, 224, 193, 0.85), 0 0 6px rgba(236, 224, 193, 0.75);
+}
+
+.hrp-hero-title .hrp-standfirst {
+  max-width: 27em;
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.85rem;
+  font-size: 1.08rem;
+  line-height: 1.55;
+  background: rgba(236, 224, 193, 0.88);
+  border-left: 3px solid var(--hrp-gilt);
+}
+
+.hrp-hero-card {
+  position: absolute;
+  width: min(23rem, 86%);
+  padding: 1.05rem 1.3rem 1.2rem;
+  background: rgba(31, 68, 54, 0.95);
+  color: #F1E6CC;
+  border-top: 4px double var(--hrp-gilt-pale);
+  box-shadow: inset 0 0 0 1px rgba(212, 178, 106, 0.55);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.hrp-hero-card p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.hrp-hero-card .hrp-hero-card-label {
+  margin-bottom: 0.4rem;
+  font-style: italic;
+  color: var(--hrp-gilt-pale);
+  font-size: 0.95rem;
+}
+
+.hrp-hero-card.at-right { right: clamp(0.5rem, 3vw, 2.5rem); top: 18vh; }
+.hrp-hero-card.at-left { left: clamp(0.5rem, 3vw, 2.5rem); top: 42vh; }
+.hrp-hero-card.at-right-low { right: clamp(0.5rem, 3vw, 2.5rem); bottom: 15vh; }
+
+.hrp-hero-foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hrp-hero-hint {
+  padding: 0.1rem 0.6rem;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--hrp-ink);
+  background: rgba(236, 224, 193, 0.86);
+}
+
+.hrp-hero a.hrp-hero-skip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1.2rem;
+  box-sizing: border-box;
+  background: var(--hrp-vellum);
+  color: var(--hrp-ink);
+  text-decoration: none;
+  border: 1px solid var(--hrp-gilt);
+  box-shadow: inset 0 0 0 3px var(--hrp-vellum), inset 0 0 0 4px rgba(169, 133, 58, 0.6);
+  font-size: 0.95rem;
+}
+
+.hrp-hero a.hrp-hero-skip:hover {
+  background: #FFF9EC;
+}
+
+.hrp-hero a.hrp-hero-skip:focus-visible {
+  outline: 2px solid var(--hrp-green);
+  outline-offset: 3px;
+}
+
+/* Reduced motion: one still frame, no pinning, no moving cards. */
+.hrp-hero.is-static {
+  height: auto;
+}
+
+.hrp-hero.is-static .hrp-hero-stage {
+  position: relative;
+  height: min(88vh, 760px);
+}
+
+.hrp-hero.is-static .hrp-hero-cards,
+.hrp-hero.is-static .hrp-hero-hint {
+  display: none;
+}
+
+.hrp-anchor {
+  scroll-margin-top: 3.5rem;
+}
+
+@media (max-width: 640px) {
+  .hrp-hero-title {
+    bottom: 8rem;
+  }
+  .hrp-hero-title .hrp-standfirst {
+    font-size: 1rem;
+  }
+  .hrp-hero-card.at-right,
+  .hrp-hero-card.at-left,
+  .hrp-hero-card.at-right-low {
+    left: 0.5rem;
+    right: 0.5rem;
+    top: auto;
+    bottom: 7.5rem;
+    width: auto;
+  }
+}

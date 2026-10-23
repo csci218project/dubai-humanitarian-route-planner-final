@@ -1,0 +1,59 @@
+# Victorian chart-room theme for the route planner.
+# Colours match ui/palette.py and ui/theme.css; change all three together.
+
+[server]
+# Serves ./static at app/static so the bundled fonts work offline.
+enableStaticServing = true
+
+[client]
+toolbarMode = "minimal"
+
+[theme]
+base = "light"
+primaryColor = "#1F4436"            # bottle green: selected route, primary buttons
+backgroundColor = "#ECE0C1"         # parchment
+secondaryBackgroundColor = "#F6EEDA"  # vellum: inputs and panels
+textColor = "#2B2118"               # iron-gall ink
+linkColor = "#1F4436"
+borderColor = "#B9A57E"
+showWidgetBorder = true
+baseRadius = "2px"
+buttonRadius = "2px"
+baseFontSize = 16
+font = "Libre Caslon Text, Georgia, serif"
+headingFont = "Libre Caslon Text, Georgia, serif"
+headingFontWeights = [700, 700, 700, 700, 700, 700]
+redColor = "#7B2230"                # claret: closures and errors
+greenColor = "#1F4436"
+yellowColor = "#A9853A"
+blueColor = "#3E5A6E"
+grayColor = "#8C7A62"
+dataframeHeaderBackgroundColor = "#E4D5B0"
+dataframeBorderColor = "#C9B48A"
+chartCategoricalColors = ["#1F4436", "#A9853A", "#7B2230", "#3E5A6E", "#6E5B45"]
+
+[[theme.fontFaces]]
+family = "Libre Caslon Text"
+url = "app/static/fonts/LibreCaslonText-VF.woff2"
+weight = "400 700"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Libre Caslon Text"
+url = "app/static/fonts/LibreCaslonText-Italic-VF.woff2"
+weight = "400 700"
+style = "italic"
+
+[[theme.fontFaces]]
+family = "Abril Fatface"
+url = "app/static/fonts/AbrilFatface-Regular.woff2"
+weight = "400"
+style = "normal"
+
+[theme.sidebar]
+backgroundColor = "#1F4436"         # green leather ledger cover
+secondaryBackgroundColor = "#2A5545"
+textColor = "#F1E6CC"
+primaryColor = "#D4B26A"            # pale gilt
+linkColor = "#D4B26A"
+borderColor = "#4F7666"

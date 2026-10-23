@@ -1,0 +1,8 @@
+{
+  "count": 120,
+  "width": 1280,
+  "height": 720,
+  "pattern": "frame_{index:03d}.webp",
+  "poster": "poster.webp",
+  "source": "gemini_generated_video_a68f4fca.mp4"
+}

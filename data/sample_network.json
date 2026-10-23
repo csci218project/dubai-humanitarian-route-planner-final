@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "title": "Dubai Humanitarian Route Planner - synthetic teaching network",
+    "version": "1.0",
+    "data_status": "synthetic_illustrative_only",
+    "disclaimer": "All transport times, costs, capacities, risk scores, and corridor connections are invented for algorithm demonstrations. They are not current operational guidance, confirmed access permissions, quotations, or official Dubai Humanitarian data.",
+    "default_origin": "DUBAI_HUB",
+    "default_destination": "RELIEF_DESTINATION",
+    "currency": "USD",
+    "risk_scale": "0 (lower illustrative exposure) to 10 (higher illustrative exposure); ordinal score, not probability"
+  },
+  "nodes": [
+    {"node_id":"DUBAI_HUB", "name":"Dubai Humanitarian Hub", "latitude":24.87, "longitude":55.15, "region":"UAE", "node_type":"origin", "description":"Illustrative origin for the demonstration network."},
+    {"node_id":"DWC_AIRPORT", "name":"Al Maktoum Airport (DWC)", "latitude":24.90, "longitude":55.16, "region":"UAE", "node_type":"airport", "description":"Synthetic airport transfer node; availability in the app is a scenario toggle."},
+    {"node_id":"JEBEL_ALI_PORT", "name":"Jebel Ali Port", "latitude":24.99, "longitude":55.06, "region":"UAE", "node_type":"port", "description":"Synthetic maritime transfer node."},
+    {"node_id":"ABU_DHABI_HUB", "name":"Abu Dhabi Logistics Hub", "latitude":24.45, "longitude":54.65, "region":"UAE", "node_type":"hub", "description":"Illustrative regional logistics node."},
+    {"node_id":"RIYADH_HUB", "name":"Riyadh Regional Hub", "latitude":24.71, "longitude":46.68, "region":"Arabian Peninsula", "node_type":"hub", "description":"Illustrative transfer node used to create an alternate land path."},
+    {"node_id":"JEDDAH_HUB", "name":"Jeddah Regional Hub", "latitude":21.49, "longitude":39.19, "region":"Arabian Peninsula", "node_type":"hub", "description":"Illustrative air/sea transfer node."},
+    {"node_id":"CAIRO_HUB", "name":"Cairo Logistics Hub", "latitude":30.12, "longitude":31.40, "region":"North Africa", "node_type":"hub", "description":"Illustrative hub in the sample graph."},
+    {"node_id":"AQABA_HUB", "name":"Aqaba Logistics Hub", "latitude":29.53, "longitude":35.00, "region":"Levant", "node_type":"hub", "description":"Illustrative regional transfer node."},
+    {"node_id":"EL_ARISH_HUB", "name":"El Arish Staging Hub", "latitude":31.13, "longitude":33.80, "region":"Sinai staging", "node_type":"staging", "description":"Illustrative staging node; not a statement about present-day access."},
+    {"node_id":"RELIEF_DESTINATION", "name":"Affected-Area Relief Destination", "latitude":31.45, "longitude":34.39, "region":"Destination corridor", "node_type":"destination", "description":"Generic simulated destination; route links are fictional and must not be used operationally."}
+  ],
+  "edges": [
+    {"edge_id":"E01_DUBAI_DWC", "source":"DUBAI_HUB", "target":"DWC_AIRPORT", "mode":"road", "time_hours":0.8, "cost_usd":120, "risk_score":1.0, "capacity_tonnes":20, "notes":"Short domestic transfer; illustrative values."},
+    {"edge_id":"E02_DUBAI_JEBELALI", "source":"DUBAI_HUB", "target":"JEBEL_ALI_PORT", "mode":"road", "time_hours":1.0, "cost_usd":160, "risk_score":1.0, "capacity_tonnes":28, "notes":"Port transfer; illustrative values."},
+    {"edge_id":"E03_DUBAI_ABUDHABI", "source":"DUBAI_HUB", "target":"ABU_DHABI_HUB", "mode":"road", "time_hours":1.6, "cost_usd":220, "risk_score":1.0, "capacity_tonnes":22, "notes":"Alternative domestic land transfer; illustrative values."},
+    {"edge_id":"E04_DWC_JEDDAH_AIR", "source":"DWC_AIRPORT", "target":"JEDDAH_HUB", "mode":"air", "time_hours":3.4, "cost_usd":18500, "risk_score":2.0, "capacity_tonnes":18, "notes":"Synthetic air leg; not a schedule or quotation."},
+    {"edge_id":"E05_DWC_CAIRO_AIR", "source":"DWC_AIRPORT", "target":"CAIRO_HUB", "mode":"air", "time_hours":4.2, "cost_usd":21500, "risk_score":2.0, "capacity_tonnes":16, "notes":"Synthetic air leg; not a schedule or quotation."},
+    {"edge_id":"E06_JEBELALI_JEDDAH_SEA", "source":"JEBEL_ALI_PORT", "target":"JEDDAH_HUB", "mode":"sea", "time_hours":48.0, "cost_usd":6200, "risk_score":2.5, "capacity_tonnes":100, "notes":"Synthetic maritime leg; voyage time and capacity are placeholders."},
+    {"edge_id":"E07_JEBELALI_AQABA_SEA", "source":"JEBEL_ALI_PORT", "target":"AQABA_HUB", "mode":"sea", "time_hours":72.0, "cost_usd":9300, "risk_score":3.0, "capacity_tonnes":95, "notes":"Synthetic maritime leg; voyage time and capacity are placeholders."},
+    {"edge_id":"E08_ABUDHABI_RIYADH_ROAD", "source":"ABU_DHABI_HUB", "target":"RIYADH_HUB", "mode":"road", "time_hours":10.5, "cost_usd":1700, "risk_score":2.0, "capacity_tonnes":25, "notes":"Illustrative land leg; border/permit constraints are not modelled."},
+    {"edge_id":"E09_RIYADH_JEDDAH_ROAD", "source":"RIYADH_HUB", "target":"JEDDAH_HUB", "mode":"road", "time_hours":10.0, "cost_usd":1450, "risk_score":2.0, "capacity_tonnes":25, "notes":"Illustrative land leg."},
+    {"edge_id":"E10_JEDDAH_CAIRO_AIR", "source":"JEDDAH_HUB", "target":"CAIRO_HUB", "mode":"air", "time_hours":2.8, "cost_usd":14200, "risk_score":2.0, "capacity_tonnes":17, "notes":"Synthetic air leg; not a schedule or quotation."},
+    {"edge_id":"E11_JEDDAH_AQABA_SEA", "source":"JEDDAH_HUB", "target":"AQABA_HUB", "mode":"sea", "time_hours":18.0, "cost_usd":2800, "risk_score":3.0, "capacity_tonnes":80, "notes":"Synthetic maritime transfer."},
+    {"edge_id":"E12_CAIRO_ELARISH_ROAD", "source":"CAIRO_HUB", "target":"EL_ARISH_HUB", "mode":"road", "time_hours":5.5, "cost_usd":750, "risk_score":4.0, "capacity_tonnes":18, "notes":"Illustrative inland transfer; not current access guidance."},
+    {"edge_id":"E13_AQABA_ELARISH_MULTIMODAL", "source":"AQABA_HUB", "target":"EL_ARISH_HUB", "mode":"sea + road", "time_hours":9.0, "cost_usd":2100, "risk_score":4.0, "capacity_tonnes":35, "notes":"Synthetic multimodal transfer; assumes a connection that has not been validated."},
+    {"edge_id":"E14_ELARISH_DESTINATION", "source":"EL_ARISH_HUB", "target":"RELIEF_DESTINATION", "mode":"land convoy", "time_hours":2.5, "cost_usd":420, "risk_score":7.0, "capacity_tonnes":12, "notes":"Entirely illustrative corridor edge; not a claim that access is open or authorized."},
+    {"edge_id":"E15_AQABA_DESTINATION", "source":"AQABA_HUB", "target":"RELIEF_DESTINATION", "mode":"land convoy", "time_hours":8.0, "cost_usd":1350, "risk_score":8.0, "capacity_tonnes":10, "notes":"Synthetic alternative used to test rerouting when a corridor closes; not operational guidance."}
+  ]
+}
