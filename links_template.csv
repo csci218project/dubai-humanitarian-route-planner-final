@@ -1,0 +1,2 @@
+edge_id,source,target,mode,time_hours,cost_usd,risk_score,capacity_tonnes,notes
+E01_DUBAI_DWC,DUBAI_HUB,DWC_AIRPORT,road,0.8,120,1.0,20,Short domestic transfer; illustrative values.

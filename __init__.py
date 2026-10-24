@@ -1,1 +1,1 @@
-"""Heuristics, heuristic checks and the risk model (owner: Mohammed)."""
+"""Network data, scenarios and team coordination (owner: Shahir)."""
