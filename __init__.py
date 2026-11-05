@@ -1,1 +1,1 @@
-"""Extra search algorithms (owner: Koushik)."""
+"""Synthetic networks and experiments (owner: Shreya)."""
