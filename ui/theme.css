@@ -785,3 +785,21 @@
     width: auto;
   }
 }
+
+/* ---- Before/after comparison ------------------------------------------------ */
+
+.hrp-dash.m-before {
+  --hrp-dash-colour: rgba(43, 33, 24, 0.5);
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--hrp-dash-colour) 0 17px, transparent 17px 34px);
+}
+
+.hrp-ledger-compare td.hrp-route-cell {
+  text-align: left;
+  white-space: normal;
+  min-width: 16rem;
+}
+
+.hrp-ledger-compare thead th:nth-child(2) {
+  text-align: left;
+}

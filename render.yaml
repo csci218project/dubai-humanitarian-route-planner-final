@@ -1,0 +1,12 @@
+# Render blueprint. On render.com: New > Blueprint, then pick this repository.
+services:
+  - type: web
+    name: humanitarian-route-planner
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --server.fileWatcherType none --browser.gatherUsageStats false
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10

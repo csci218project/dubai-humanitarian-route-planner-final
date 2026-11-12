@@ -39,7 +39,7 @@ _FONT_PX, _CHAR_PX, _LINE_PX = 13.0, 7.6, 16.5
 
 def schematic_positions(
     network: RouteNetwork,
-    min_gap: float = 0.25,
+    min_gap: float | None = None,
     y_stretch: float = 2.0,
     max_iterations: int = 800,
 ) -> dict[str, Position]:
@@ -58,6 +58,8 @@ def schematic_positions(
     ids = sorted(network.nodes)
     if not ids:
         return {}
+    if min_gap is None:   # 0.25 for the 10-hub sample, tighter for bigger networks
+        min_gap = min(0.25, 0.85 / math.sqrt(len(ids)))
     mean_lat = sum(network.nodes[i].latitude for i in ids) / len(ids)
     shrink = math.cos(math.radians(mean_lat))
     raw = {
@@ -175,7 +177,7 @@ def place_labels(
         x, y = positions[node_id]
         return -sum(1.0 / (1e-6 + math.hypot(x - ox, y - oy)) for other, (ox, oy) in positions.items() if other != node_id)
 
-    for node_id in sorted(positions, key=crowding):
+    for node_id in sorted(labels, key=crowding):
         best_where, best_cost = candidates[0], float("inf")
         for rank, where in enumerate(candidates):
             box = _label_box(positions[node_id], labels[node_id], where, units)
@@ -184,7 +186,7 @@ def place_labels(
             cost += sum(_overlap_area(box, m) for other, m in markers.items() if other != node_id) * 6
             cost += links_crossed(box) * 0.0015
             spill = max(0.0, x0 - box[0]) + max(0.0, box[2] - x1) + max(0.0, y0 - box[1]) + max(0.0, box[3] - y1)
-            cost += spill * 0.05
+            cost += spill * 2.0   # labels must stay inside the chart
             if cost < best_cost:
                 best_where, best_cost = where, cost
         result[node_id] = best_where
@@ -262,10 +264,16 @@ def build_route_figure(
     origin: str,
     destination: str,
     inspected: tuple[str, str] | None = None,
-    height: int = 520,
+    baseline_route: RouteResult | None = None,
+    height: int | None = None,
 ) -> go.Figure:
-    """Draw the network with the found route gilded and closures in claret."""
+    """Draw the network with the found route gilded and closures in claret.
+
+    ``baseline_route`` is the route before the closures; when given, it is drawn
+    as a faded long-dashed line under the current route (the before/after view).
+    """
     fig = go.Figure()
+    large = len(network.nodes) > 16   # bigger networks: lighter links, fewer labels
     route_edges = set(route.edge_path) if route and route.success else set()
     route_nodes = set(route.node_path) if route and route.success else set()
 
@@ -283,7 +291,8 @@ def build_route_figure(
         xs, ys = _segments(pairs)
         fig.add_trace(go.Scatter(
             x=xs, y=ys, mode="lines", hoverinfo="skip", showlegend=False,
-            line={"color": LINE, "width": 1.7, "dash": MODE_DASH.get(mode, "solid")},
+            line={"color": LINE, "width": 1.2 if large else 1.7, "dash": MODE_DASH.get(mode, "solid")},
+            opacity=0.6 if large else 1.0,
         ))
 
     # 2. Closed links.
@@ -298,7 +307,16 @@ def build_route_figure(
             line={"color": CLARET, "width": 2.0, "dash": "dot"}, opacity=0.85,
         ))
 
-    # 3. The route: a gilt casing under a bottle-green line, plus direction arrows.
+    # 3a. The route before the closures, faded and long-dashed, under the current route.
+    if baseline_route is not None and baseline_route.success:
+        before_pairs = [(positions[a], positions[b]) for a, b in zip(baseline_route.node_path, baseline_route.node_path[1:])]
+        xs, ys = _segments(before_pairs)
+        fig.add_trace(go.Scatter(
+            x=xs, y=ys, mode="lines", name="before", hoverinfo="skip", showlegend=False,
+            line={"color": INK, "width": 3.4, "dash": "longdash"}, opacity=0.45,
+        ))
+
+    # 3b. The route: a gilt casing under a bottle-green line, plus direction arrows.
     if route_edges:
         ordered = list(zip(route.node_path, route.node_path[1:]))
         pairs = [(positions[a], positions[b]) for a, b in ordered]
@@ -341,7 +359,7 @@ def build_route_figure(
         elif on_route:
             handle_symbol.append("diamond"); handle_color.append(GREEN); handle_line.append(GILT); handle_size.append(12)
         else:
-            handle_symbol.append("diamond"); handle_color.append(VELLUM); handle_line.append(SEPIA); handle_size.append(10)
+            handle_symbol.append("diamond"); handle_color.append(VELLUM); handle_line.append(SEPIA); handle_size.append(7 if large else 10)
     fig.add_trace(go.Scatter(
         x=handle_x, y=handle_y, mode="markers", showlegend=False, customdata=handle_data,
         marker={"symbol": handle_symbol, "size": handle_size, "color": handle_color,
@@ -359,6 +377,13 @@ def build_route_figure(
     #    label colour after a click.
     xr, yr = _ranges(positions)
     labels = {node_id: chart_label(node.name) for node_id, node in network.nodes.items()}
+    if large:   # label only the hubs that matter right now; hovering shows any hub's name
+        keep = {origin, destination} | route_nodes | set(closed_nodes)
+        if baseline_route is not None and baseline_route.success:
+            keep |= set(baseline_route.node_path)
+        if inspected and inspected[0] == "node":
+            keep.add(inspected[1])
+        labels = {node_id: text for node_id, text in labels.items() if node_id in keep}
     all_segments = [(positions[e.source], positions[e.target]) for e in network.edges.values()]
     label_positions = place_labels(positions, labels, (xr, yr), all_segments)
 
@@ -413,7 +438,8 @@ def build_route_figure(
         "middle right": {"xanchor": "left", "yanchor": "middle", "xshift": 12},
         "middle left": {"xanchor": "right", "yanchor": "middle", "xshift": -12},
     }
-    for node_id, (x, y) in positions.items():
+    for node_id in labels:
+        x, y = positions[node_id]
         fig.add_annotation(
             x=x, y=y, text=labels[node_id], showarrow=False, align="center",
             font={"family": FONT, "size": _FONT_PX, "color": CLARET if node_id in closed_nodes else INK},
@@ -440,7 +466,7 @@ def build_route_figure(
 
     fig.update_layout(
         template="none",
-        height=height,
+        height=height or (600 if large else 520),
         margin={"l": 6, "r": 6, "t": 6, "b": 6},
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",

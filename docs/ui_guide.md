@@ -83,6 +83,23 @@ again. With "reduce motion" switched on in the operating system, the opening
 shows a single still frame. If the frames are missing, the app falls back to
 the plain title.
 
+## Before and after the closures
+
+When anything is closed, the app solves the same request twice with the same
+algorithm: once with everything open (before) and once with the closures
+(after). The before route is drawn on the chart as a faded long-dashed line
+under the current route, and a table compares the two routes' legs, time,
+cost, risk and nodes explored, with the change underneath.
+
+## Two networks
+
+The sidebar switches between the 10-hub sample and the 40-hub extended
+network (`data/extended_network.json`, built by
+`scripts/build_extended_network.py`). Switching resets the origin,
+destination and closures. On the bigger network the chart labels only the hubs
+that matter (origin, destination, routes, closed and inspected hubs) and
+draws unused links lighter; hover over any hub to see its name.
+
 ## Design choices
 
 - **Colour has one job each.** Green means the route or open, claret means closed, gilt is ornament only, sepia is inactive.

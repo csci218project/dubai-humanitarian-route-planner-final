@@ -28,14 +28,21 @@ ALGORITHMS = ["A*", "Dijkstra", "Hierarchical"]
 CHART_KEY = "route_chart"
 
 
-def init_state(network: RouteNetwork) -> None:
-    """Create every session key once, with the app's starting values."""
+def default_endpoints(network: RouteNetwork) -> tuple[str, str]:
+    """The network's default origin and destination, or its first and last hubs."""
     node_ids = list(network.nodes)
     origin = network.metadata.get("default_origin")
     destination = network.metadata.get("default_destination")
+    return (origin if origin in network.nodes else node_ids[0],
+            destination if destination in network.nodes else node_ids[-1])
+
+
+def init_state(network: RouteNetwork) -> None:
+    """Create every session key once, with the app's starting values."""
+    origin, destination = default_endpoints(network)
     defaults = {
-        "origin": origin if origin in network.nodes else node_ids[0],
-        "destination": destination if destination in network.nodes else node_ids[-1],
+        "origin": origin,
+        "destination": destination,
         "preset": "Balanced",
         "w_time": PRESETS["Balanced"][0],
         "w_cost": PRESETS["Balanced"][1],
@@ -70,6 +77,33 @@ def sync_preset_from_weights() -> None:
 
 
 # ---- Disruptions ----------------------------------------------------------
+
+def reset_for_network(network: RouteNetwork) -> None:
+    """Another network was picked: start again from its defaults, with nothing closed."""
+    st.session_state.origin, st.session_state.destination = default_endpoints(network)
+    st.session_state.scenario = next(iter(SCENARIOS))
+    st.session_state.closed_nodes = []
+    st.session_state.closed_edges = []
+    st.session_state.inspected = None
+
+
+def keep_valid_state(network: RouteNetwork) -> None:
+    """Drop anything the current network doesn't have. Runs before the widgets are drawn."""
+    origin, destination = default_endpoints(network)
+    if st.session_state.origin not in network.nodes:
+        st.session_state.origin = origin
+    if st.session_state.destination not in network.nodes:
+        st.session_state.destination = destination
+    nodes = [n for n in st.session_state.closed_nodes if n in network.nodes]
+    if nodes != list(st.session_state.closed_nodes):
+        st.session_state.closed_nodes = nodes
+    edges = [e for e in st.session_state.closed_edges if e in network.edges]
+    if edges != list(st.session_state.closed_edges):
+        st.session_state.closed_edges = edges
+    inspected = st.session_state.inspected
+    if inspected and inspected[1] not in (network.nodes if inspected[0] == "node" else network.edges):
+        st.session_state.inspected = None
+
 
 def apply_scenario() -> None:
     """Scenario picked: load its closures into the two editable closure lists."""
@@ -129,7 +163,7 @@ def set_endpoint(which: str, node_id: str, name: str) -> None:
 
 # ---- Chart clicks ---------------------------------------------------------
 
-def consume_chart_selection() -> None:
+def consume_chart_selection(network: RouteNetwork | None = None) -> None:
     """Turn the latest chart click into the inspected hub or link.
 
     Run this at the top of the script, before the chart is drawn, so the
@@ -145,7 +179,10 @@ def consume_chart_selection() -> None:
     for point in points:
         data = point.get("customdata")
         if isinstance(data, (list, tuple)) and len(data) >= 2 and data[0] in ("node", "edge"):
-            picked = (str(data[0]), str(data[1]))
+            kind, item = str(data[0]), str(data[1])
+            if network is not None and item not in (network.nodes if kind == "node" else network.edges):
+                continue   # a click left over from the other network
+            picked = (kind, item)
             break
     if picked is None:
         st.session_state.last_selection = None  # cleared, so the next click counts

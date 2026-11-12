@@ -67,6 +67,10 @@ def points(value: float | None) -> str:
     return "–" if value is None else f"{value:,.1f}"
 
 
+def signed_int(value: int) -> str:
+    return f"+{value}" if value > 0 else f"−{abs(value)}" if value < 0 else "±0"
+
+
 def signed(value: float, unit: str = "", money_format: bool = False) -> str:
     sign = "+" if value > 0 else "−" if value < 0 else "±"
     magnitude = abs(value)
@@ -265,9 +269,11 @@ def inspector_edge(network: RouteNetwork, edge_id: str, closed: bool, on_route: 
     )
 
 
-def legend() -> None:
-    rows = [
-        ('<span class="hrp-key-route"></span>', "Route that was found"),
+def legend(show_before: bool = False) -> None:
+    rows = [('<span class="hrp-key-route"></span>', "Route that was found")]
+    if show_before:
+        rows.append(('<span class="hrp-dash m-before"></span>', "Route before the closures"))
+    rows += [
         ('<span class="hrp-dash m-closed"></span>', "Closed hub or link"),
         ('<span class="hrp-dash m-air"></span>', "Air"),
         ('<span class="hrp-dash m-sea"></span>', "Sea"),
@@ -281,6 +287,48 @@ def legend() -> None:
         f'<ul>{items}</ul>'
         '<p class="hrp-panel-text">Green circle: origin. Gilt star: destination. '
         "Triangle: airport. Diamond: port. Square: staging area.</p></div>"
+    )
+
+
+# ---- Before and after the closures ------------------------------------------------
+
+def before_after(network: RouteNetwork, before: RouteResult, after: RouteResult | None) -> None:
+    """Same request and weights, solved with everything open and with the current closures."""
+    def stops(route: RouteResult) -> str:
+        return " → ".join(escape(network.nodes[node_id].name) for node_id in route.node_path)
+
+    def row(label: str, route: RouteResult | None) -> str:
+        if route is None or not route.success:
+            return (f"<tr><th scope='row'>{label}</th><td class='hrp-route-cell'><span class='hrp-bad'>No route</span>"
+                    "</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>")
+        return (f"<tr><th scope='row'>{label}</th><td class='hrp-route-cell'>{stops(route)}</td>"
+                f"<td>{route.hops}</td><td>{hours(route.total_time_hours)}</td><td>{money(route.total_cost_usd)}</td>"
+                f"<td>{points(route.total_risk_points)}</td><td>{route.nodes_expanded}</td></tr>")
+
+    if after is not None and after.success:
+        change = (
+            "<tr class='hrp-total'><th scope='row'>Change</th>"
+            f"<td class='hrp-route-cell'>{'Same route' if after.edge_path == before.edge_path else 'Re-routed'}</td>"
+            f"<td>{signed_int(after.hops - before.hops)}</td>"
+            f"<td>{signed(after.total_time_hours - before.total_time_hours, ' h')}</td>"
+            f"<td>{signed(after.total_cost_usd - before.total_cost_usd, money_format=True)}</td>"
+            f"<td>{signed(after.total_risk_points - before.total_risk_points)}</td>"
+            f"<td>{signed_int(after.nodes_expanded - before.nodes_expanded)}</td></tr>"
+        )
+    else:
+        change = ("<tr class='hrp-total'><th scope='row'>Change</th><td class='hrp-route-cell'>"
+                  "The closures cut the destination off.</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>")
+    algorithm = escape(before.algorithm)
+    st.html(
+        '<div class="hrp-section"><h2>Before and after the closures</h2>'
+        f'<p class="hrp-section-note">Same request and weights, solved by {algorithm} with everything open '
+        "and with the current closures.</p></div>"
+        '<div class="hrp-ledger-wrap"><table class="hrp-ledger hrp-ledger-compare">'
+        "<thead><tr><th scope='col'><span class='hrp-visually-hidden'>Network</span></th><th scope='col'>Route</th>"
+        "<th scope='col'>Legs</th><th scope='col'>Time</th><th scope='col'>Cost</th><th scope='col'>Risk points</th>"
+        "<th scope='col'>Nodes explored</th></tr></thead>"
+        f"<tbody>{row('Before (all open)', before)}{row('After (with closures)', after)}</tbody>"
+        f"<tfoot>{change}</tfoot></table></div>"
     )
 
 

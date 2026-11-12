@@ -16,6 +16,8 @@ An educational route-planning prototype for Project B, “Humanitarian Route Pla
 - Preconfigured disruption scenarios and custom unavailable nodes/edges.
 - Route details for stops, links, time, cost, risk, score, runtime, and expanded states, plus the cost of the current closures compared with the open network.
 - Clickable schematic chart: click a hub or link to inspect it, close or reopen it, or make it the origin or destination.
+- Before/after view: closing anything draws the route before the closures, faded, on the chart, and compares both routes in a table (legs, time, cost, risk, nodes explored).
+- Two networks: the 10-hub sample and a 40-hub extended network with real airport and port locations (see Data).
 - Leg-by-leg journey strip and an account-book ledger comparing all three algorithms.
 - Unit tests for correctness, closures, malformed inputs, metrics, and the front end.
 - Seeded benchmark script producing trial-level CSV and summary statistics.
@@ -29,10 +31,12 @@ dubai-humanitarian-route-planner-final/
 ├── static/fonts/                   # Bundled fonts (SIL Open Font Licence) so the demo works offline
 ├── static/sequence/                # Opening globe frames (WebP) and manifest.json
 ├── .streamlit/config.toml          # Theme colours and fonts
+├── render.yaml                     # Deployment settings for Render
 ├── requirements.txt                # Runtime dependencies
 ├── requirements-dev.txt            # Extra tools (frame extraction)
 ├── __init__.py                     # Project overview
 ├── data/sample_network.json        # Synthetic network and data disclaimer
+├── data/extended_network.json      # 40-hub network: real locations, illustrative link values
 ├── humanitarian_route_planner/
 │   ├── models.py                   # Domain objects and route result
 │   ├── network.py                  # Input validation, graph, distances, metrics
@@ -51,6 +55,7 @@ dubai-humanitarian-route-planner-final/
 ├── tests/                          # Core and front-end tests
 ├── scripts/run_benchmarks.py       # Repeatable experiments
 ├── scripts/make_sequence.py        # Turns a video into the opening's frame sequence
+├── scripts/build_extended_network.py  # Rebuilds the extended network from public data
 ├── results/                        # Example/generated benchmark CSV files
 └── docs/                           # Architecture, experiment, rubric, viva and UI notes
 ```
@@ -94,11 +99,11 @@ Open the local URL printed by Streamlit, usually `http://localhost:8501`.
 
 ## Use the prototype
 
-1. Pick the origin and the generic affected-area destination in the sidebar.
+1. Pick the network (sample or extended), the origin and the generic affected-area destination in the sidebar.
 2. Choose a priority preset (Fastest, Cheapest, Safest, Balanced) or fine-tune the time, cost and risk sliders.
 3. Choose a disruption scenario, or add closed hubs and links.
 4. Read the summary: the route found, its totals, and what the closures cost compared with the open network.
-5. Click any hub, or the diamond halfway along a link, to inspect it and close or reopen it. The route updates at once.
+5. Click any hub, or the diamond halfway along a link, to inspect it and close or reopen it. The route updates at once, and the route before the closures appears faded on the chart with a before/after table.
 6. Switch the chart between the A*, Dijkstra and hierarchical routes, and open the tabs to compare algorithms, read the leg-by-leg plan, or browse the network data.
 
 See docs/ui_guide.md for how the front end works.
@@ -120,6 +125,22 @@ The route score is the sum of edge scores. The USD scaling stops large numeric u
 - **Dijkstra:** uses non-negative generalized edge costs and a priority queue; optimal for the configured graph. Standard adjacency-list/binary-heap complexity is `O((V + E) log V)`.
 - **A\*:** prioritizes `g(n) + h(n)`. Its heuristic uses straight-line distance times the minimum active edge-score-per-kilometre ratio. Under the provided distance assumptions this is an admissible lower bound. It should match Dijkstra's optimal score, although runtime savings are not guaranteed on a tiny graph.
 - **Hierarchical search:** first chooses a sequence of regions in an abstract graph, then searches the detailed network constrained to that region sequence. This can limit search but may exclude a globally better route or fail to realize an abstract path; this trade-off is part of the analysis.
+
+## Data
+
+The app offers two networks; switch between them in the sidebar.
+
+- **Sample network** (`data/sample_network.json`): the original 10 hubs and 15 links. All values are synthetic.
+- **Extended network** (`data/extended_network.json`): the sample plus 30 real airports and ports, 40 hubs and 197 links in total. Locations come from OurAirports and UN/LOCODE, air links follow scheduled-route pairs in OpenFlights data, and sea distances follow shipping lanes (searoute). Every time, cost, risk and capacity value is an illustrative assumption: time and cost are fitted to the sample's own links so new links are on the same scale, and risk follows a fixed rule by mode and distance from the destination. New hubs reach the destination only through the sample's corridor links.
+
+To rebuild the extended network (it downloads the public data first):
+
+```
+pip install -r requirements-dev.txt
+python scripts/build_extended_network.py
+```
+
+Sources and licences: OurAirports (public domain), OpenFlights route data (ODbL 1.0), UN/LOCODE (UNECE) and searoute (Apache 2.0). These give locations, routes and distances, not humanitarian transit times, costs or risk, so those stay documented assumptions; Dubai Humanitarian's anonymised data would replace them if shared.
 
 ## Opening sequence
 
@@ -146,6 +167,12 @@ This runs the core and front-end tests in `tests/` (graph loading and validation
 python -m unittest discover -s tests
 python -m unittest test_search test_heuristics test_experiments test_build_network
 ```
+
+## Deploy
+
+Streamlit keeps each visitor's session in server memory over one long-lived connection, so it needs a host that runs a normal web server. Vercel's functions cap a WebSocket connection at 5 minutes by default (about 13 on paid plans), which would cut the app off mid-session, so deploy to Render instead.
+
+On render.com, choose **New > Blueprint**, pick this repository and confirm. `render.yaml` sets the Python version, the install and start commands, and a health check. The free plan sleeps when idle, so open the link a minute before a demo.
 
 ## Reproducible experiments
 

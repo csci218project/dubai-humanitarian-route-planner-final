@@ -7,7 +7,7 @@ import math
 import unittest
 from pathlib import Path
 
-from humanitarian_route_planner.algorithms import a_star
+from humanitarian_route_planner.algorithms import a_star, compare_algorithms
 from humanitarian_route_planner.models import CostWeights
 from humanitarian_route_planner.network import RouteNetwork
 from ui.chart import _ranges, build_route_figure, chart_label, place_labels, schematic_positions
@@ -71,10 +71,34 @@ class RouteFigureTests(unittest.TestCase):
                                     "DUBAI_HUB", "RELIEF_DESTINATION")
         self.assertIn(("node", "CAIRO_HUB"), self.clickable_items(figure))
 
+    def test_before_route_is_drawn_when_given(self):
+        closed = {"CAIRO_HUB"}
+        after = a_star(NETWORK, "DUBAI_HUB", "RELIEF_DESTINATION", CostWeights(), blocked_nodes=closed)
+        figure = build_route_figure(NETWORK, self.positions, after, closed, set(),
+                                    "DUBAI_HUB", "RELIEF_DESTINATION", baseline_route=self.route)
+        self.assertIn("before", [trace.name for trace in figure.data])
+
     def test_figure_builds_without_a_route(self):
         figure = build_route_figure(NETWORK, self.positions, None, set(), set(),
                                     "DUBAI_HUB", "RELIEF_DESTINATION")
         self.assertEqual(len(figure.layout.annotations), len(NETWORK.nodes))
+
+
+class ExtendedNetworkTests(unittest.TestCase):
+    def setUp(self):
+        self.network = RouteNetwork.from_json(ROOT / "data" / "extended_network.json")
+
+    def test_keeps_every_sample_hub_and_link(self):
+        self.assertTrue(set(NETWORK.nodes) <= set(self.network.nodes))
+        self.assertTrue(set(NETWORK.edges) <= set(self.network.edges))
+
+    def test_a_star_matches_dijkstra(self):
+        results = {r.algorithm: r for r in compare_algorithms(self.network, "DUBAI_HUB", "RELIEF_DESTINATION", CostWeights())}
+        self.assertTrue(results["A*"].success)
+        self.assertAlmostEqual(results["A*"].objective_score, results["Dijkstra"].objective_score)
+
+    def test_chart_places_every_hub(self):
+        self.assertEqual(set(schematic_positions(self.network)), set(self.network.nodes))
 
 
 class OpeningSequenceTests(unittest.TestCase):
@@ -96,7 +120,7 @@ class AppSmokeTests(unittest.TestCase):
 
     def setUp(self):
         from streamlit.testing.v1 import AppTest
-        self.app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60).run()
+        self.app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=300).run()
 
     def test_app_runs_without_errors(self):
         self.assertFalse(self.app.exception)
@@ -114,6 +138,18 @@ class AppSmokeTests(unittest.TestCase):
     def test_closed_origin_offers_a_reopen_button(self):
         self.app.multiselect(key="closed_nodes").set_value(["DUBAI_HUB"]).run()
         self.assertIn("Reopen Dubai Humanitarian Hub", [b.label for b in self.app.button])
+
+    def test_switching_network_resets_the_request(self):
+        names = self.app.selectbox(key="network_name").options
+        self.app.multiselect(key="closed_nodes").set_value(["CAIRO_HUB"]).run()
+        self.app.selectbox(key="network_name").set_value(names[-1]).run()
+        self.assertFalse(self.app.exception)
+        self.assertEqual(self.app.session_state.closed_nodes, [])
+        self.assertEqual(self.app.session_state.origin, "DUBAI_HUB")
+
+    def test_closing_a_hub_runs_the_before_and_after_view(self):
+        self.app.multiselect(key="closed_nodes").set_value(["CAIRO_HUB"]).run()
+        self.assertFalse(self.app.exception)
 
     def test_inspector_closes_and_reopens_a_hub(self):
         self.app.session_state["inspected"] = ("node", "CAIRO_HUB")

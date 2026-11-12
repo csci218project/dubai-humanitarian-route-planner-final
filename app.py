@@ -6,7 +6,8 @@ The page reacts to every change at once; there is no "run" button. Streamlit
 reruns this script after each interaction, the three algorithms re-solve the
 small network in a few milliseconds, and the summary, chart and tables are
 redrawn. Clicking a hub or link on the chart opens it in the inspector, where
-it can be closed or reopened.
+it can be closed or reopened. When anything is closed, the route before the
+closures is drawn faded on the chart and compared in a before/after table.
 
 Front end only: routes are computed by ``humanitarian_route_planner``; the
 ``ui`` package handles layout, styling and interaction.
@@ -20,7 +21,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from humanitarian_route_planner.algorithms import a_star, compare_algorithms
+from humanitarian_route_planner.algorithms import compare_algorithms
 from humanitarian_route_planner.models import CostWeights
 from humanitarian_route_planner.network import RouteNetwork
 from humanitarian_route_planner.scenarios import SCENARIOS
@@ -31,13 +32,17 @@ from ui.sequence import hero_sequence, planner_anchor
 from ui.state import (
     ALGORITHMS, CHART_KEY, PRESETS,
     apply_preset, apply_scenario, clear_inspector, consume_chart_selection, init_state,
-    keep_a_highlight, reopen_all, reopen_node, scenario_is_edited, set_endpoint,
-    show_pending_toast, sync_preset_from_weights, toggle_edge, toggle_node,
+    keep_a_highlight, keep_valid_state, reopen_all, reopen_node, reset_for_network,
+    scenario_is_edited, set_endpoint, show_pending_toast, sync_preset_from_weights,
+    toggle_edge, toggle_node,
 )
 from ui.theme import inject_theme
 
 ROOT = Path(__file__).resolve().parent
-NETWORK_PATH = ROOT / "data" / "sample_network.json"
+NETWORK_CHOICES = [   # (label, file); files that don't exist are left out
+    ("Sample network", ROOT / "data" / "sample_network.json"),
+    ("Extended network", ROOT / "data" / "extended_network.json"),
+]
 
 st.set_page_config(
     page_title="Humanitarian Route Planner",
@@ -48,25 +53,49 @@ st.set_page_config(
 
 
 @st.cache_resource
-def load_network() -> RouteNetwork:
-    return RouteNetwork.from_json(NETWORK_PATH)
+def load_network(path: str) -> RouteNetwork:
+    return RouteNetwork.from_json(Path(path))
 
 
 @st.cache_resource
-def chart_positions(_network: RouteNetwork) -> dict[str, tuple[float, float]]:
-    # The leading underscore tells Streamlit not to hash the network object.
+def chart_positions(path: str, _network: RouteNetwork) -> dict[str, tuple[float, float]]:
+    # Cached per file; the leading underscore tells Streamlit not to hash the network object.
     return schematic_positions(_network)
 
 
-network = load_network()
-positions = chart_positions(network)
+NETWORK_FILES = {
+    f"{label} ({len(load_network(str(path)).nodes)} hubs)": str(path)
+    for label, path in NETWORK_CHOICES if path.exists()
+}
+if st.session_state.get("network_name") not in NETWORK_FILES:
+    st.session_state.network_name = next(iter(NETWORK_FILES))
+network_path = NETWORK_FILES[st.session_state.network_name]
+network = load_network(network_path)
+positions = chart_positions(network_path, network)
 node_ids = list(network.nodes)
 edge_ids = list(network.edges)
 
+
+def on_network_change() -> None:
+    reset_for_network(load_network(NETWORK_FILES[st.session_state.network_name]))
+
+
 init_state(network)
-consume_chart_selection()   # before drawing, so the chart can ring the clicked item
+consume_chart_selection(network)   # before drawing, so the chart can ring the clicked item
+keep_valid_state(network)
 inject_theme()
 show_pending_toast()
+
+
+def _sources_html(sources: object) -> str:
+    """Credit the public datasets a network was built from (required by their licences)."""
+    if not isinstance(sources, list) or not sources:
+        return ""
+    items = ", ".join(
+        f'<a href="{escape(str(s.get("url", "")))}">{escape(str(s.get("name", "")))}</a> ({escape(str(s.get("licence", "")))})'
+        for s in sources if isinstance(s, dict)
+    )
+    return f"<p><b>Sources.</b> {items}.</p>"
 
 
 def node_name(node_id: str) -> str:
@@ -82,6 +111,12 @@ def edge_label(edge_id: str) -> str:
 
 with st.sidebar:
     ui.sidebar_heading("Route request")
+    if len(NETWORK_FILES) > 1:
+        st.selectbox(
+            "Network", list(NETWORK_FILES), key="network_name", on_change=on_network_change,
+            help="The sample is the original 10-hub network. The extended network adds real airports "
+                 "and ports; every link value in both is illustrative.",
+        )
     st.selectbox("Origin", node_ids, key="origin", format_func=node_name)
     st.selectbox("Destination", node_ids, key="destination", format_func=node_name)
 
@@ -139,10 +174,16 @@ if problem is None:
         network, origin, destination, weights,
         blocked_nodes=closed_nodes, blocked_edges=closed_edges,
     )
-    # The same request with everything open, to measure what the closures cost.
-    baseline = a_star(network, origin, destination, weights)
     chosen = next((r for r in results if r.algorithm == st.session_state.highlight), None)
     route = chosen if chosen and chosen.success else next((r for r in results if r.success), None)
+    # The same request with everything open, solved by the same algorithm: the "before".
+    open_results = compare_algorithms(network, origin, destination, weights) if (closed_nodes or closed_edges) else results
+    shown = route.algorithm if route else st.session_state.highlight
+    baseline = next((r for r in open_results if r.algorithm == shown), None)
+
+before_differs = bool(closed_nodes or closed_edges) and baseline is not None and baseline.success and (
+    route is None or not route.success or route.edge_path != baseline.edge_path
+)
 
 
 # ---- Main page -------------------------------------------------------------------
@@ -166,13 +207,18 @@ elif problem in ("origin", "destination"):
 else:
     ui.dispatch(network, route, baseline, origin, destination, len(closed_nodes) + len(closed_edges))
     ui.journey(network, route)
+    if (closed_nodes or closed_edges) and baseline is not None and baseline.success:
+        ui.before_after(network, baseline, route)
 
 chart_col, side_col = st.columns([3.1, 1], gap="large")
 
 with chart_col:
     title_col, control_col = st.columns([1.25, 1], vertical_alignment="bottom")
     with title_col:
-        ui.section_heading("Route chart", "Schematic: hubs are spaced out so labels fit, so distances aren't to scale.")
+        chart_note = "Schematic: hubs are spaced out so labels fit, so distances aren't to scale."
+        if len(network.nodes) > 16:
+            chart_note += " Only key hubs are labelled; hover over any hub for its name."
+        ui.section_heading("Route chart", chart_note)
     with control_col:
         st.segmented_control(
             "Show the route found by", ALGORITHMS, key="highlight", required=True,
@@ -184,6 +230,7 @@ with chart_col:
     figure = build_route_figure(
         network, positions, route, closed_nodes, closed_edges,
         origin, destination, st.session_state.inspected,
+        baseline_route=baseline if before_differs else None,
     )
     with st.container(key="chart_frame"):
         st.plotly_chart(
@@ -236,7 +283,7 @@ with side_col:
             st.button("Clear selection", key="inspector_clear", on_click=clear_inspector, type="tertiary")
         else:
             st.html(ui.inspector_empty())
-    ui.legend()
+    ui.legend(show_before=before_differs)
 
 
 # ---- Detail tabs ------------------------------------------------------------------
@@ -269,7 +316,8 @@ with data_tab:
         '<div class="hrp-prose">'
         f"<p><b>Data notice.</b> {escape(disclaimer)}</p>"
         f"<p>{len(network.nodes)} hubs and {len(network.edges)} links. Risk runs from {escape(risk_scale)}.</p>"
-        "</div>"
+        + _sources_html(network.metadata.get("sources"))
+        + "</div>"
     )
     st.dataframe(
         pd.DataFrame([

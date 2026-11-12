@@ -124,10 +124,21 @@ _PLAYER_JS = r"""
 
   // Decoded frames survive Streamlit reruns, so they are only downloaded once.
   const cache = window.__hrpFrameCache || (window.__hrpFrameCache = new Map());
-  const images = FRAMES.map((src) => {
+  // Request frames coarse-to-fine (every 16th, then every 8th, ...), so scrolling works
+  // early on a slow connection and the in-between frames fill in as they arrive.
+  const order = [];
+  const queued = new Set();
+  for (let step = 16; step >= 1; step >>= 1) {
+    for (let i = 0; i < FRAMES.length; i += step) {
+      if (!queued.has(i)) { queued.add(i); order.push(i); }
+    }
+  }
+  const images = new Array(FRAMES.length);
+  order.forEach((i) => {
+    const src = FRAMES[i];
     let image = cache.get(src);
     if (!image) { image = new Image(); image.decoding = 'async'; image.src = src; cache.set(src, image); }
-    return image;
+    images[i] = image;
   });
   const isReady = (image) => image.complete && image.naturalWidth > 0;
   const nearestReady = (index) => {
