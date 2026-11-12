@@ -9,9 +9,9 @@ from pathlib import Path
 from humanitarian_route_planner.algorithms import a_star, dijkstra
 from humanitarian_route_planner.models import CostWeights
 from humanitarian_route_planner.network import RouteNetwork
-from team.koushik_search.search import breadth_first_search, greedy_best_first, weighted_a_star
+from search import breadth_first_search, greedy_best_first, weighted_a_star
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parent
 NETWORK = RouteNetwork.from_json(ROOT / "data" / "sample_network.json")
 START, GOAL = "DUBAI_HUB", "RELIEF_DESTINATION"
 WEIGHTS = CostWeights()

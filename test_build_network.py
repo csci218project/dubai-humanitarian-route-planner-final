@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 from humanitarian_route_planner.network import RouteNetwork
-from team.shahir_network.build_network import build_network, write_network_json
+from build_network import build_network, write_network_json
 
 HERE = Path(__file__).resolve().parent
 

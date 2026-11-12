@@ -8,11 +8,11 @@ from pathlib import Path
 
 from humanitarian_route_planner.models import CostWeights
 from humanitarian_route_planner.network import RouteNetwork
-from team.mohammed_heuristics.heuristics import (
+from heuristics import (
     check_admissible, check_consistent, survival_weight, time_lower_bound_heuristic, zero_heuristic,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parent
 NETWORK = RouteNetwork.from_json(ROOT / "data" / "sample_network.json")
 GOAL = "RELIEF_DESTINATION"
 WEIGHTS = CostWeights()

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from humanitarian_route_planner.network import RouteNetwork
 
-RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
+RESULTS_DIR = Path(__file__).resolve().parent / "results"
 
 
 def run_scaling(

@@ -3,7 +3,7 @@
 Owner: Shahir.
 
 Usage (from the repository root):
-    python -m team.shahir_network.build_network team/shahir_network/hubs_template.csv team/shahir_network/links_template.csv data/extended_network.json
+    python build_network.py hubs_template.csv links_template.csv data/extended_network.json
 
 The columns are the same fields as data/sample_network.json, so the app can
 load the result directly.
@@ -48,7 +48,7 @@ def write_network_json(network: RouteNetwork, path: Path, metadata: dict) -> Non
 def main(argv: list[str] | None = None) -> None:
     args = sys.argv[1:] if argv is None else argv
     if len(args) != 3:
-        raise SystemExit("Usage: python -m team.shahir_network.build_network HUBS.csv LINKS.csv OUTPUT.json")
+        raise SystemExit("Usage: python build_network.py HUBS.csv LINKS.csv OUTPUT.json")
     raise NotImplementedError("Shahir: main is not written yet")
 
 

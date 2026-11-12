@@ -8,8 +8,8 @@ from pathlib import Path
 
 from humanitarian_route_planner.algorithms import a_star, dijkstra
 from humanitarian_route_planner.models import CostWeights
-from team.shreya_experiments.experiments import run_scaling
-from team.shreya_experiments.synthetic import generate_network
+from experiments import run_scaling
+from synthetic import generate_network
 
 
 class GeneratorTests(unittest.TestCase):
