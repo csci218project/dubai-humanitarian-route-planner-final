@@ -169,9 +169,7 @@ python -m unittest test_search test_heuristics test_experiments test_build_netwo
 
 ## Deploy
 
-Streamlit keeps each visitor's session in server memory over one long-lived connection, so it needs a host that runs a normal web server. Vercel's functions cap a WebSocket connection at 5 minutes by default (about 13 on paid plans), which would cut the app off mid-session, so deploy to Render instead.
-
-On render.com, choose **New > Blueprint**, pick this repository and confirm. `render.yaml` sets the Python version, the install and start commands, and a health check. The free plan sleeps when idle, so open the link a minute before a demo.
+The app runs on Streamlit Community Cloud from this repository (branch main, file app.py, Python 3.12). Pushing to main updates the live app automatically.
 
 ## Reproducible experiments
 
