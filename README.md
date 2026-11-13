@@ -26,38 +26,37 @@ An educational route-planning prototype for Project B, “Humanitarian Route Pla
 
 ```text
 dubai-humanitarian-route-planner-final/
-├── app.py                          # Streamlit UI (page layout and wiring)
-├── ui/                             # Front end: theme, chart, components, session state, opening sequence
-├── static/fonts/                   # Bundled fonts (SIL Open Font Licence) so the demo works offline
-├── static/sequence/                # Opening globe frames (WebP) and manifest.json
-├── .streamlit/config.toml          # Theme colours and fonts
-├── render.yaml                     # Deployment settings for Render
-├── requirements.txt                # Runtime dependencies
-├── requirements-dev.txt            # Extra tools (frame extraction)
-├── __init__.py                     # Project overview
-├── data/sample_network.json        # Synthetic network and data disclaimer
-├── data/extended_network.json      # 40-hub network: real locations, illustrative link values
+├── app.py                             # Streamlit UI (page layout and wiring)
+├── ui/                                # Front end: theme, chart, components, session state, opening sequence
+├── static/fonts/                      # Bundled fonts (SIL Open Font Licence) so the demo works offline
+├── static/sequence/                   # Opening globe frames (WebP) and manifest.json
+├── .streamlit/config.toml             # Theme colours and fonts
+├── render.yaml                        # Deployment settings for Render
+├── requirements.txt                   # Runtime dependencies
+├── requirements-dev.txt               # Extra tools (frame extraction)
+├── __init__.py                        # Project overview
+├── data/sample_network.json           # Synthetic network and data disclaimer
+├── data/extended_network.json         # 40-hub network: real locations, illustrative link values
 ├── humanitarian_route_planner/
-│   ├── models.py                   # Domain objects and route result
-│   ├── network.py                  # Input validation, graph, distances, metrics
-│   ├── algorithms.py               # Dijkstra, A*, hierarchical search
-│   ├── scenarios.py                # Preset disruptions
-│   └── visualization.py            # Static matplotlib drawing (not used by the app)
-├── build_network.py                # CSV-to-JSON network builder (Shahir)
-├── hubs_template.csv               # Network hubs as a spreadsheet (Shahir)
-├── links_template.csv              # Network links as a spreadsheet (Shahir)
-├── meeting_log.md                  # Mentor meeting log, Appendix B (Shahir)
-├── search.py                       # BFS, Greedy best-first, Weighted A* (Koushik)
-├── heuristics.py                   # Heuristic checks and risk model (Mohammed)
-├── synthetic.py                    # Seeded random networks (Shreya)
-├── experiments.py                  # Scaling and Monte Carlo experiments (Shreya)
-├── test_*.py                       # Tests for the four team files above
-├── tests/                          # Core and front-end tests
-├── scripts/run_benchmarks.py       # Repeatable experiments
-├── scripts/make_sequence.py        # Turns a video into the opening's frame sequence
+│   ├── models.py                      # Domain objects and route result
+│   ├── network.py                     # Input validation, graph, distances, metrics
+│   ├── algorithms.py                  # Dijkstra, A*, hierarchical search
+│   └── scenarios.py                   # Preset disruptions
+├── build_network.py                   # CSV-to-JSON network builder (Shahir)
+├── hubs_template.csv                  # Network hubs as a spreadsheet (Shahir)
+├── links_template.csv                 # Network links as a spreadsheet (Shahir)
+├── meeting_log.md                     # Mentor meeting log, Appendix B (Shahir)
+├── search.py                          # BFS, Greedy best-first, Weighted A* (Koushik)
+├── heuristics.py                      # Heuristic checks and risk model (Mohammed)
+├── synthetic.py                       # Seeded random networks (Shreya)
+├── experiments.py                     # Scaling and Monte Carlo experiments (Shreya)
+├── test_*.py                          # Tests for the four team files above
+├── tests/                             # Core and front-end tests
+├── scripts/run_benchmarks.py          # Repeatable experiments
+├── scripts/make_sequence.py           # Turns a video into the opening's frame sequence
 ├── scripts/build_extended_network.py  # Rebuilds the extended network from public data
-├── results/                        # Example/generated benchmark CSV files
-└── docs/                           # Architecture, experiment, rubric, viva and UI notes
+├── results/                           # Example/generated benchmark CSV files
+└── docs/                              # Architecture, experiment, rubric, viva and UI notes
 ```
 
 ## Requirements
