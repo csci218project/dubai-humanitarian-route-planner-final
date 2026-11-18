@@ -4,7 +4,7 @@
 
 An educational route-planning prototype for Project B, “Humanitarian Route Planner,” listed in the supplied Dubai Humanitarian project spreadsheet. It compares three AI search approaches on a relief network from Dubai to El Obeid in Sudan (23 hubs, 36 one-way legs) and shows how closures, slow-downs and cost shocks change the route.
 
-> **Important limitation:** The network is illustrative and was compiled by the project team. Locations are real; transit times, costs, capacities, risk scores and reliability are planning estimates, not official Dubai Humanitarian data, schedules or security assessments. Do not use it to plan actual aid movements.
+> **Important limitation:** The network data was provided by Dubai Humanitarian for this student project. The app is a teaching prototype for comparing search algorithms, not an operational planning tool: it has no live schedules, permissions or security assessments, and its routes are not recommendations. Do not use it to plan actual aid movements.
 
 ## Features
 
@@ -17,7 +17,7 @@ An educational route-planning prototype for Project B, “Humanitarian Route Pla
 - Route details: stops, legs, typical and slow-case (p90) time, cost per tonne, risk, reliability, transfers, score, runtime and expanded states, plus what the disruption costs compared with normal conditions.
 - Clickable schematic chart: click a hub or link to inspect it, close or reopen it, or make it the origin or destination.
 - Before/after view: under any disruption, the normal-conditions route is drawn faded on the chart and both routes are compared in a table (legs, transfers, time, cost, risk, nodes explored), next to the reroute the data expects.
-- Network data kept in a spreadsheet the team can edit, converted to the app's format by a script (see Data).
+- Network data from Dubai Humanitarian, kept as the original spreadsheet and converted to the app's format by a script (see Data).
 - Leg-by-leg journey strip and an account-book ledger comparing all three algorithms.
 - Unit tests for correctness, closures, malformed inputs, metrics, and the front end.
 - Seeded benchmark script producing trial-level CSV and summary statistics.
@@ -41,20 +41,12 @@ dubai-humanitarian-route-planner-final/
 │   ├── models.py                      # Domain objects and route result
 │   ├── network.py                     # Input validation, graph, distances, metrics
 │   └── algorithms.py                  # Dijkstra, A*, hierarchical search
-├── build_network.py                   # CSV-to-JSON network builder (Shahir)
-├── hubs_template.csv                  # Network hubs as a spreadsheet (Shahir)
-├── links_template.csv                 # Network links as a spreadsheet (Shahir)
-├── meeting_log.md                     # Mentor meeting log, Appendix B (Shahir)
-├── search.py                          # BFS, Greedy best-first, Weighted A* (Koushik)
-├── heuristics.py                      # Heuristic checks and risk model (Mohammed)
-├── synthetic.py                       # Seeded random networks (Shreya)
-├── experiments.py                     # Scaling and Monte Carlo experiments (Shreya)
-├── test_*.py                          # Tests for the four team files above
+├── meeting_log.md                     # Dubai Humanitarian meeting log (report Appendix B)
 ├── tests/                             # Core and front-end tests
-├── scripts/run_benchmarks.py          # Repeatable experiments
+├── scripts/run_benchmarks.py          # Benchmarks: every scenario and seeded random closures
 ├── scripts/make_sequence.py           # Turns a video into the opening's frame sequence
 ├── scripts/import_hrp_data.py         # Converts the spreadsheet into data/hrp_network.json
-├── results/                           # Example/generated benchmark CSV files
+├── results/                           # Benchmark results on the Dubai Humanitarian network
 └── docs/                              # Architecture, experiment, rubric, viva and UI notes
 ```
 
@@ -129,7 +121,7 @@ The route score is the sum of edge scores, plus any transfers. Cost is in US dol
 
 ## Data
 
-The app uses one network: relief cargo from the Dubai humanitarian logistics hub (IHC) to the El Obeid distribution hub in Sudan (ELO), with Port Sudan, Gedaref and Kosti as alternative destinations. The team keeps it in `data/hrp_network_data.xlsx`:
+The app uses one network: relief cargo from the Dubai humanitarian logistics hub (IHC) to the El Obeid distribution hub in Sudan (ELO), with Port Sudan, Gedaref and Kosti as alternative destinations. Dubai Humanitarian provided it as `data/hrp_network_data.xlsx`:
 
 - **locations** (23): airports, sea ports, hubs, border crossings, the origin and the destination, with coordinates.
 - **network_legs** (36): one-way legs with distance, typical and slow-case (p90) transit time, cost per tonne, weekly capacity, a 1–5 risk score, reliability % and corridor.
@@ -163,12 +155,7 @@ From the repository root:
 python -m unittest discover
 ```
 
-This runs the core and front-end tests in `tests/` (graph loading and validation, Dijkstra/A* score agreement, hierarchical path continuity, closures, disconnected routes, unknown IDs, metric aggregation, and the app) and the team tests (`test_*.py` in the root). To run one group only:
-
-```
-python -m unittest discover -s tests
-python -m unittest test_search test_heuristics test_experiments test_build_network
-```
+This runs every test in `tests/`: graph loading and validation, one-way legs, the transfer rule, scenario adjustments, Dijkstra/A* agreement in every scenario, a brute-force check of Dijkstra, the A* heuristic never overestimating, closures, unknown IDs, metric totals, and the app itself. The spreadsheet check is skipped unless `openpyxl` is installed (`pip install -r requirements-dev.txt`).
 
 ## Deploy
 
@@ -177,13 +164,16 @@ The app runs on Streamlit Community Cloud from this repository (branch main, fil
 ## Reproducible experiments
 
 ```bash
-python scripts/run_benchmarks.py --trials 30 --seed 218 --output-dir results
+python scripts/run_benchmarks.py --trials 30 --seed 218 --repeats 5 --output-dir results
 ```
 
-- `results/benchmark_trials.csv`: each algorithm result in each seeded scenario.
-- `results/benchmark_summary.csv`: success rate, means and sample standard deviations for runtime, expanded states, score, and gap versus Dijkstra.
+Two experiment sets, each solved by Dijkstra, A* and hierarchical search:
 
-Use at least 30 scenarios for the report, record the seed, and do not cherry-pick results. Small-graph runtime is noisy, so show nodes expanded and optimality gap as well. A fixed seed enables reproduction; a second seed can be a sensitivity check.
+- `results/benchmark_scenarios.csv`: every scenario in the data (S0–S9) under the four weight presets.
+- `results/benchmark_trials.csv`: 30 seeded random disruptions (closed legs and hubs) under the Balanced weights.
+- `results/benchmark_summary.csv`: success rate, means and sample standard deviations for states expanded, runtime, score and gap versus Dijkstra, per set and algorithm.
+
+Runtimes are the median of `--repeats` runs and are still noisy on a network this small, so report states expanded and the gap to Dijkstra as well. `results/benchmark_interpretation.md` discusses the recorded run.
 
 ## Programmatic example
 
@@ -213,49 +203,9 @@ for result in results:
 - Risk is an ordinal teaching score added over links. It is not a calibrated probability or current security assessment.
 - Real operational use would require authoritative timestamped data, domain validation, uncertainty handling, security review, and an authorized human decision-maker.
 
-## Team and responsibilities
+## Team
 
-| Files | Owner | Work | Report sections |
-|---|---|---|---|
-| `build_network.py`, `hubs_template.csv`, `links_template.csv`, `meeting_log.md` | Shahir | Bigger documented network, CSV-to-JSON builder, disruption scenarios, mentor log, coordination | Executive summary, motivation, requirements, appendices, final edit |
-| `search.py` | Koushik | BFS, Greedy best-first and Weighted A* baselines, with instrumentation | Algorithm design and complexity |
-| `heuristics.py` | Mohammed | Heuristic checks, a time-based heuristic, risk as probability, sensitivity | Heuristic justification, trade-offs, limitations |
-| `synthetic.py`, `experiments.py` | Shreya | Synthetic networks, scaling and Monte Carlo experiments, plots | Experiments and results |
-| `app.py`, `ui/`, `static/` | Arwin | Front end and opening sequence (done) | Implementation, screenshots, demo script |
-
-Each team file starts with empty functions to fill in, and has a matching `test_*.py` file describing what the code must do. Those tests are skipped until you remove the `@unittest.skip` line above each one.
-
-### Shahir: network data and coordination
-
-- [ ] Build a larger network (about 25–40 hubs) in `hubs_template.csv` and `links_template.csv`, with real coordinates from public sources (OurAirports for airports, the World Port Index for ports) and times, costs and risk scores labelled as assumptions.
-- [ ] Write an assumptions table: speed and cost per km for each mode, with sources.
-- [ ] Finish `build_network.py` so it turns the two CSVs into `data/extended_network.json`, in the same format as the sample.
-- [ ] Add 3–5 named disruption scenarios for the new network, each with a one-line reason.
-- [ ] Keep `meeting_log.md` current if the team goes for the industry bonus, and raise contribution problems with the lab instructor by Week 6.
-
-### Koushik: search algorithms
-
-- [ ] `breadth_first_search()`: the route with the fewest legs, ignoring time, cost and risk.
-- [ ] `greedy_best_first()`: always expand the hub that looks closest to the goal.
-- [ ] `weighted_a_star()`: A* with f = g + ε·h; the route cost must stay within ε × the optimal cost.
-- [ ] Each takes the same arguments as `dijkstra()` and returns a `RouteResult` with states expanded and runtime, respecting closed hubs and links.
-- [ ] Stretch: bidirectional Dijkstra, or Yen's algorithm for the k shortest routes.
-
-### Mohammed: cost model and heuristics
-
-- [ ] `check_admissible()` and `check_consistent()` for any heuristic.
-- [ ] `time_lower_bound_heuristic()`, with the argument for why it never overestimates.
-- [ ] `survival_weight()`: risk score to disruption probability p, then weight −ln(1 − p), with the mapping stated as an assumption.
-- [ ] A sensitivity check of which route wins as the weights change.
-- [ ] Agree a `heuristic` argument with Koushik so heuristics can be compared inside A*.
-
-### Shreya: experiments and testing
-
-- [ ] `generate_network()`: seeded, connected random networks with air, sea and road links.
-- [ ] `run_scaling()`: states expanded and runtime against network size, over several seeds.
-- [ ] `run_monte_carlo()`: random closures from risk scores, comparing how often the fastest and safest routes survive and the delay replanning adds.
-- [ ] Plots saved to `results/`, with mean ± standard deviation and the seeds recorded.
-- [ ] Later: a Weighted A* ε sweep once Koushik's `weighted_a_star()` is ready.
+CSCI218 group project. Each member's contribution is recorded in the team contribution table (Appendix A of the group report) and in this repository's commit history.
 
 ## Team workflow
 
@@ -272,12 +222,12 @@ python -m pip install -r requirements.txt
 Every work session:
 
 1. Get everyone's latest work: `git checkout main`, then `git pull`.
-2. Switch to your own branch: `git checkout -b koushik/search` the first time; afterwards `git checkout koushik/search`, then `git merge main`. Use your own name and topic.
+2. Switch to your own branch: `git checkout -b <name>/<topic>` the first time; afterwards `git checkout <name>/<topic>`, then `git merge main`.
 3. Work on your own files and run the tests (see Run tests).
-4. Commit small steps and push, for example: `git add search.py test_search.py`, then `git commit -m "Add breadth-first search baseline"`, then `git push -u origin koushik/search`.
+4. Commit small steps and push: `git add <your files>`, then `git commit -m "Describe the change"`, then `git push -u origin <name>/<topic>`.
 5. Open a pull request into `main` on GitHub, ask a teammate to review it, then merge.
 
-Change only your own files, and talk to the owner before editing shared ones: `humanitarian_route_planner/algorithms.py` (Koushik), data and `network.py` (Shahir), `app.py` and `ui/` (Arwin). Commit in your own name, never commit `.venv`, passwords or personal data, and tell Arwin when your part is ready to appear in the app.
+Talk to the team before changing shared files (the core in `humanitarian_route_planner/`, the data, `app.py` and `ui/`). Commit in your own name, and never commit `.venv`, passwords or personal data.
 
 ## Submission notes
 

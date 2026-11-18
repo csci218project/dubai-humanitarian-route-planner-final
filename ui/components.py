@@ -119,11 +119,11 @@ def masthead() -> None:
     )
 
 
-def notice() -> None:
+def notice(metadata: dict | None = None) -> None:
+    source = escape(str((metadata or {}).get("data_status", "Illustrative data.")))
     st.html(
-        '<p class="hrp-notice"><strong>Illustrative data.</strong> Locations are real, but transit times, costs, '
-        "risk and reliability are estimates for algorithm demonstrations. Don’t use this tool to plan real aid "
-        "movements.</p>"
+        f'<p class="hrp-notice"><strong>{source}</strong> This is a teaching prototype for comparing search '
+        "algorithms, not an operational planning tool. Don’t use it to plan real aid movements.</p>"
     )
 
 
@@ -143,7 +143,7 @@ def alert(message_html: str, tone: str = "claret") -> None:
 def footer() -> None:
     st.html(
         '<footer class="hrp-footer">CSCI218 Foundations of Artificial Intelligence, '
-        "University of Wollongong in Dubai, Autumn 2026. Teaching prototype on synthetic data.</footer>"
+        "University of Wollongong in Dubai, Autumn 2026. Teaching prototype on network data from Dubai Humanitarian.</footer>"
     )
 
 

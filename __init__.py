@@ -1,16 +1,16 @@
 """Dubai Humanitarian Route Planner: CSCI218 Project B, UOWD, Autumn 2026.
 
 An educational prototype that compares Dijkstra, A* and hierarchical search on
-a small synthetic multimodal logistics network, and shows how closing an
-airport, port, hub or corridor changes the route. All data is synthetic.
+a relief network from Dubai to El Obeid in Sudan, and shows how closures,
+slow-downs and cost shocks change the route. The network data was provided by
+Dubai Humanitarian.
 
 Where things live:
-    humanitarian_route_planner/    core models, network, algorithms, scenarios
-    app.py, ui/, static/           Streamlit front end and opening sequence (Arwin)
-    build_network.py               CSV-to-JSON network builder (Shahir)
-    search.py                      BFS, Greedy best-first, Weighted A* (Koushik)
-    heuristics.py                  heuristic checks and risk model (Mohammed)
-    synthetic.py, experiments.py   synthetic networks and experiments (Shreya)
+    humanitarian_route_planner/     core models, network, algorithms
+    app.py, ui/, static/            Streamlit front end and opening sequence
+    data/                           the network (spreadsheet and the app's JSON)
+    scripts/                        data import, benchmarks, opening frames
+    tests/                          unit and app tests
 
-See README.md for setup, usage and who owns what.
+See README.md for setup, usage and the data.
 """

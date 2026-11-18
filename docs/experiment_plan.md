@@ -1,56 +1,41 @@
 # Experiment and results plan
 
-Use this plan for the CSCI218 report. The repository includes a benchmark runner; regenerate the results on your own machine and discuss the output from that run.
+Regenerate the results on your own machine and discuss that run; `results/benchmark_interpretation.md` discusses the recorded one.
 
 ## Research questions
 
-1. Does A* find the same minimum generalized score as Dijkstra?
-2. Does A* expand fewer states than Dijkstra for these synthetic scenarios?
-3. How often does hierarchical search find a feasible route under closures?
-4. When hierarchical search succeeds, how does its score compare with Dijkstra?
-5. How do closures affect success rate, runtime, route score, and the number of expanded states?
+1. Does A* always find the same minimum score as Dijkstra, transfers included?
+2. When does A* expand fewer states than Dijkstra, and does that make it faster?
+3. How often does hierarchical search find the optimal route, and why does it miss?
+4. How do the data's scenarios change the route, and do the changes match the reroutes the data expects?
 
 ## Variables
 
-- **Independent:** algorithm (Dijkstra, A*, hierarchical), generated closure scenario, and objective weights.
-- **Dependent:** route success, objective score, total time, illustrative cost, accumulated risk points, expanded states, runtime (ms), and optimality gap vs Dijkstra.
-- **Controlled:** same JSON graph, origin, destination, weights, number of trials, and random seed for each algorithm comparison.
+- **Independent:** algorithm (Dijkstra, A*, hierarchical), scenario (S0–S9 or a seeded random disruption) and weight preset (Fastest, Cheapest, Safest, Balanced).
+- **Dependent:** success, route score, time, slow-case time, cost per tonne, risk, reliability, transfers, states expanded, runtime and gap to Dijkstra.
+- **Controlled:** the same network file, origin, destination, presets, random seed and number of repeats for every algorithm.
 
 ## Procedure
 
-1. Install the listed dependencies.
-2. Run all unit tests and record the result.
-3. Run `python scripts/run_benchmarks.py --trials 30 --seed 218 --output-dir results`.
-4. Preserve `benchmark_trials.csv` and `benchmark_summary.csv` with the submission.
-5. Check Dijkstra/A* objective-score agreement for every scenario where both succeed; investigate any mismatch before reporting results.
-6. Report success rates and mean ± sample standard deviation for runtime, expanded states, score, and score gap. Include the number of successful trials with each statistic.
-7. Discuss hierarchical cases with higher cost or failures to realize an abstract region sequence.
-8. Optionally rerun with a second seed as a sensitivity check. Do not replace the declared primary seed with the most favourable result.
+1. Run all tests: `python -m unittest discover`.
+2. Run `python scripts/run_benchmarks.py --trials 30 --seed 218 --repeats 5 --output-dir results`.
+3. Keep the three CSV files with the submission.
+4. Check that A* matches Dijkstra in every run; investigate any mismatch before reporting.
+5. Report success rates and mean ± sample standard deviation, with the number of runs behind each figure.
+6. Discuss the hierarchical cases that are worse than Dijkstra or fail.
+7. Optionally rerun with a second seed as a sensitivity check, without replacing the declared seed.
 
-## Baseline and metrics
+## Metrics
 
-- **Baseline:** Dijkstra's optimal generalized-score path under the same graph, weights, and closures.
-- **A* optimality gap:** should be 0% within numerical tolerance when both methods succeed.
-- **Hierarchical gap:** `(hierarchical score - Dijkstra score) / Dijkstra score × 100%`, only if both succeed and Dijkstra score is positive.
-- **Success rate:** successful route count / number of trials × 100%.
-- **Runtime:** `time.perf_counter` measurement; small-graph results are noisy.
-- **Expanded states:** search states popped for expansion, including abstract states for hierarchical search. This is not exactly a count of unique physical nodes.
-
-## Report table template
-
-| Algorithm | Success rate | Mean runtime (ms) ± SD | Mean states expanded ± SD | Mean score ± SD | Mean gap vs Dijkstra |
-|---|---:|---:|---:|---:|---:|
-| Dijkstra | Copy from CSV | Copy from CSV | Copy from CSV | Copy from CSV | 0% baseline |
-| A* | Copy from CSV | Copy from CSV | Copy from CSV | Copy from CSV | Expected 0% when both solve |
-| Hierarchical | Copy from CSV | Copy from CSV | Copy from CSV | Copy from CSV | May be positive or unavailable |
-
-Do not use predicted figures to complete this table. Add data from the generated CSV and label it as synthetic simulation results.
+- **Baseline:** Dijkstra's optimal route under the same network, scenario and weights.
+- **Gap:** `(algorithm score − Dijkstra score) / Dijkstra score × 100%`, when both succeed.
+- **States expanded:** search states taken off the queue. With transfers, a state is a hub plus the mode the cargo arrived on, so it can exceed the number of hubs; hierarchical counts include both tiers.
+- **Runtime:** median of the repeats, measured with `time.perf_counter`; noisy on a network this small.
 
 ## Threats to validity
 
-- The graph is small and manually authored; results may not generalize to larger operational networks.
-- Edge values and disruptions are synthetic, not learned from real operations.
-- Random closures are uniform in a bounded range, while real disruptions may be correlated.
-- The risk score and weighted-sum objective simplify complex humanitarian decisions.
-- Runtime is affected by machine load and Python overhead.
-- Hierarchical expansion counts include both tiers and must be labelled clearly.
+- The network is small; results may not carry over to larger networks.
+- The data's values describe one point in time and are planning figures, not measured outcomes.
+- Random disruptions are uniform, while real disruptions are often correlated.
+- Risk is ordinal and added along the route; reliability assumes independent legs; the slow case adds every leg's p90.
+- Runtime depends on the machine and on Python overhead.

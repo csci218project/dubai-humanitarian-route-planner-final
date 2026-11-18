@@ -2,7 +2,7 @@
 
 ## Selected use case
 
-The supplied workbook `Dubai_Humanitarian_AI_Student_Projects.xlsx` lists Project B, “Humanitarian Route Planner,” under “Gaza Humanitarian Air Bridge Optimization.” Its problem statement asks for fastest or lowest-risk multimodal paths from Dubai to a crisis destination when airports, ports, or roads are unavailable, and names A*, Dijkstra, heuristic search, and planning. This repository implements a demonstrator of that use case using **synthetic data only**.
+The supplied workbook `Dubai_Humanitarian_AI_Student_Projects.xlsx` lists Project B, “Humanitarian Route Planner,” under “Gaza Humanitarian Air Bridge Optimization.” Its problem statement asks for fastest or lowest-risk multimodal paths from Dubai to a crisis destination when airports, ports, or roads are unavailable, and names A*, Dijkstra, heuristic search, and planning. This repository implements a demonstrator of that use case on network data provided by Dubai Humanitarian: 23 hubs, 36 one-way legs and 10 disruption scenarios, from Dubai to El Obeid in Sudan.
 
 ## Rubric-to-artifact mapping
 
@@ -10,12 +10,13 @@ The supplied workbook `Dubai_Humanitarian_AI_Student_Projects.xlsx` lists Projec
 |---|---|
 | Problem understanding and motivation | README problem/use-case framing; dynamic closures and multimodal objective trade-offs |
 | Technical depth and algorithm design | Dijkstra, A*, hierarchical search, weighted edge objective, heuristic explanation |
-| Implementation quality | Separate model, network, algorithm, scenario, visualization, UI, benchmark and test modules |
-| Reproducibility | JSON input, dependency list, seeded benchmark runner and explicit CLI options |
-| Functional tests and edge cases | `tests/test_algorithms.py`, `tests/test_network.py` |
-| Results and baseline analysis | `scripts/run_benchmarks.py`, two CSV output files, `docs/experiment_plan.md` |
-| Demonstration | Streamlit interface with route comparisons, disruptions, route legs and network figure |
-| Limitations and constraints | README and architecture document disclose synthetic data and missing operational constraints |
+| Implementation quality | Separate model, network, algorithm, UI, data-import, benchmark and test modules |
+| Reproducibility | Spreadsheet source, import script, dependency lists, seeded benchmark runner and explicit CLI options |
+| Functional tests and edge cases | `tests/test_algorithms.py`, `tests/test_network.py`, `tests/test_hrp_network.py`, `tests/test_ui.py` |
+| Results and baseline analysis | `scripts/run_benchmarks.py`, three CSV files, `results/benchmark_interpretation.md`, `docs/experiment_plan.md` |
+| Demonstration | Live Streamlit app: data scenarios, clickable closures, before/after view, transfers, algorithm comparison |
+| Limitations and constraints | README, architecture document and benchmark interpretation state the data and modelling limits |
+| Industry engagement | Dubai Humanitarian gave feedback on the proposal and provided the network data; `meeting_log.md` records contact |
 | Git contribution evidence | README recommends shared Git use; group must record genuine individual commits |
 | Report structure | Architecture and experiment documentation support the required report sections |
 

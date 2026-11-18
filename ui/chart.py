@@ -341,7 +341,7 @@ def build_route_figure(
             )
 
     # 4. Link handles: a small diamond at the middle of every link. Clicking it
-    #    selects the link; hovering shows its synthetic attributes.
+    #    selects the link; hovering shows its attributes.
     handle_x, handle_y, handle_data = [], [], []
     handle_symbol, handle_color, handle_line, handle_size = [], [], [], []
     for edge_id, edge in network.edges.items():

@@ -117,12 +117,12 @@ def build(source: Path = SOURCE) -> dict:
         "capacity_unit": "tonnes per week",
         "risk_scale": "1 (low) to 5 (high), ordinal",
         "transfer": transfer,
-        "data_status": "Illustrative network compiled by the project team.",
+        "provider": "Dubai Humanitarian",
+        "data_status": "Network data provided by Dubai Humanitarian.",
         "disclaimer": (
-            "Illustrative network compiled by the project team from public information. Locations are real; "
-            "transit times, costs, risk scores and reliability are planning estimates for algorithm "
-            "demonstrations, not official Dubai Humanitarian data, schedules or security assessments. "
-            "Do not use it to plan real aid movements."
+            "Network data provided by Dubai Humanitarian for the CSCI218 Humanitarian Route Planner project. "
+            "This app is a teaching prototype for comparing search algorithms, not an operational planning "
+            "tool, and its routes are not recommendations. Do not use it to plan real aid movements."
         ),
         "source_file": source.name,
         "scenarios": list(specs.values()),

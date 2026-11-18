@@ -6,4 +6,4 @@ These references support the standard search-algorithm explanations in the proje
 2. Hart, P. E., Nilsson, N. J., & Raphael, B. (1968). “A Formal Basis for the Heuristic Determination of Minimum Cost Paths.” *IEEE Transactions on Systems Science and Cybernetics*, 4(2), 100–107. https://doi.org/10.1109/TSSC.1968.300136
 3. Russell, S. J., & Norvig, P. (2021). *Artificial Intelligence: A Modern Approach* (4th ed.). Pearson.
 
-The project-specific transport network is synthetic and does not come from these references or from operational data. The supplied CSCI218 project guidelines and the accompanying Dubai Humanitarian project spreadsheet are the sources for the selected course use case and assessment structure.
+The transport network (`data/hrp_network_data.xlsx`) was provided by Dubai Humanitarian for this project. The supplied CSCI218 project guidelines and the Dubai Humanitarian project spreadsheet are the sources for the selected use case and assessment structure.

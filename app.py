@@ -219,7 +219,7 @@ before_differs = bool(disruptions) and baseline is not None and baseline.success
 if not hero_sequence():   # scroll-driven globe; plain masthead if the frames are missing
     ui.masthead()
 planner_anchor()
-ui.notice()
+ui.notice(network.metadata)
 
 if not weights_ok:
     ui.alert("All three priorities are at zero, so the planner is using travel time alone. "

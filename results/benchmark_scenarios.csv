@@ -1,0 +1,121 @@
+experiment,case,preset,seed,algorithm,success,objective_score,time_hours,time_p90_hours,cost_usd_per_tonne,risk_points,reliability_pct,transfers,legs,nodes_expanded,runtime_ms_median,gap_pct_vs_dijkstra,blocked_nodes,blocked_edges,path_node_ids,message
+scenarios,S0,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.07367700000315835,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S0,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.12345900000809706,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S0,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,9,0.13310900000362835,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S0,Cheapest,,Dijkstra,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.09786600000438739,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S0,Cheapest,,A*,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.15889499999843792,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S0,Cheapest,,Hierarchical,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,14,0.1532419999961121,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S0,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.09935299999597191,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S0,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.17966800000124294,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S0,Safest,,Hierarchical,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,16,0.19303500000944496,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S0,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.06016400000419253,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S0,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.13384100000735089,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S0,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,13,0.13541100000225015,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S1,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,10,0.046236000002863875,0.0,,L04;L05;L10;L11;L12;L27,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S1,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.09449200000233304,0.0,,L04;L05;L10;L11;L12;L27,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S1,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,11,0.11078699999700348,0.0,,L04;L05;L10;L11;L12;L27,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S1,Cheapest,,Dijkstra,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.07103500000482654,0.0,,L04;L05;L10;L11;L12;L27,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S1,Cheapest,,A*,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.13876300000958963,0.0,,L04;L05;L10;L11;L12;L27,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S1,Cheapest,,Hierarchical,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,14,0.13733800000181873,0.0,,L04;L05;L10;L11;L12;L27,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S1,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,20,0.08187599999587292,0.0,,L04;L05;L10;L11;L12;L27,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S1,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,19,0.14516700001365734,0.0,,L04;L05;L10;L11;L12;L27,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S1,Safest,,Hierarchical,True,80.0,130.6,161.9,2404.0,16.0,26.99763412499999,1,7,20,0.14575000000149885,77.77777777777779,,L04;L05;L10;L11;L12;L27,IHC>DWC>JED_AIR>JED_PORT>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S1,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,10,0.047786999999743784,0.0,,L04;L05;L10;L11;L12;L27,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S1,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,10,0.10689900000215857,0.0,,L04;L05;L10;L11;L12;L27,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S1,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,11,0.1058360000030234,0.0,,L04;L05;L10;L11;L12;L27,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S2,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.05449600000417831,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S2,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.09517200000175308,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S2,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,9,0.1116419999931395,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S2,Cheapest,,Dijkstra,True,4.46,301.5,392.8,892.0,21.0,16.263951897600005,1,7,11,0.05197699999826,0.0,,L14;L15;L18,IHC>JEA>DJI_PORT>ADD>MET>GDF>KST>ELO,Optimal route found.
+scenarios,S2,Cheapest,,A*,True,4.46,301.5,392.8,892.0,21.0,16.263951897600005,1,7,11,0.13016500000162523,0.0,,L14;L15;L18,IHC>JEA>DJI_PORT>ADD>MET>GDF>KST>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S2,Cheapest,,Hierarchical,True,4.46,301.5,392.8,892.0,21.0,16.263951897600005,1,7,16,0.1426750000064203,0.0,,L14;L15;L18,IHC>JEA>DJI_PORT>ADD>MET>GDF>KST>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S2,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,21,0.10106800000642124,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S2,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,21,0.16594699999927798,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S2,Safest,,Hierarchical,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,15,0.14354199998933836,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S2,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.05696799999554969,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S2,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.12977100000455266,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S2,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,13,0.1257729999935009,0.0,,L14;L15;L18,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S3,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.059458999999151274,0.0,,L22,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S3,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.10654599999782022,0.0,,L22,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S3,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,9,0.1201150000014195,0.0,,L22,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S3,Cheapest,,Dijkstra,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.07100799999193441,0.0,,L22,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S3,Cheapest,,A*,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.14525500000672764,0.0,,L22,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S3,Cheapest,,Hierarchical,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,14,0.1430249999998523,0.0,,L22,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S3,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.09318899999755104,0.0,,L22,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S3,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.19486099999710405,0.0,,L22,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S3,Safest,,Hierarchical,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,16,0.15436699999327175,0.0,,L22,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S3,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.06057800000291991,0.0,,L22,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S3,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.1331280000016477,0.0,,L22,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S3,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,13,0.13500000000021828,0.0,,L22,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S4,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.05964800000413106,0.0,,L34,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S4,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.11584700000355497,0.0,,L34,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S4,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,9,0.11975500000005468,0.0,,L34,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S4,Cheapest,,Dijkstra,True,4.17,291.40000000000003,417.0,834.0,19.0,17.80403625,1,6,16,0.07211199999801465,0.0,,L34,IHC>JEA>PSD_PORT>ATB>OMD>KST>ELO,Optimal route found.
+scenarios,S4,Cheapest,,A*,True,4.17,291.40000000000003,417.0,834.0,19.0,17.80403625,1,6,16,0.1544699999982413,0.0,,L34,IHC>JEA>PSD_PORT>ATB>OMD>KST>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S4,Cheapest,,Hierarchical,True,4.17,291.40000000000003,417.0,834.0,19.0,17.80403625,1,6,14,0.1436730000108355,0.0,,L34,IHC>JEA>PSD_PORT>ATB>OMD>KST>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S4,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.09478599999113158,0.0,,L34,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S4,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.17538699999875007,0.0,,L34,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S4,Safest,,Hierarchical,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,16,0.17749100000230555,0.0,,L34,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S4,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.05923399999119283,0.0,,L34,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S4,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.13476499999853786,0.0,,L34,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S4,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,13,0.13401300000737137,0.0,,L34,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S5,Fastest,,Dijkstra,True,339.0,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,19,0.08137499999349984,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S5,Fastest,,A*,True,339.0,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,19,0.1579170000098884,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S5,Fastest,,Hierarchical,True,339.0,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,15,0.1443839999950569,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S5,Cheapest,,Dijkstra,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.07266800000138574,0.0,,L09;L12;L36,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S5,Cheapest,,A*,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.14644899999893823,0.0,,L09;L12;L36,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S5,Cheapest,,Hierarchical,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,14,0.14462100000400824,0.0,,L09;L12;L36,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S5,Safest,,Dijkstra,True,75.0,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,25,0.10675499999024396,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S5,Safest,,A*,True,75.0,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,25,0.18357999999807362,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S5,Safest,,Hierarchical,True,75.0,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,18,0.17814200000998426,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S5,Balanced,,Dijkstra,True,99.73049999999999,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,20,0.08978199998921355,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S5,Balanced,,A*,True,99.73049999999999,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,20,0.15860699998881955,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S5,Balanced,,Hierarchical,True,99.73049999999999,67.8,92.39999999999999,2574.0,15.0,26.018128125,0,6,17,0.14491600001065308,0.0,,L09;L12;L36,IHC>DWC>PZU>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S6,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.06005300001277192,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S6,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.11715300000503248,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S6,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,9,0.1213119999903256,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S6,Cheapest,,Dijkstra,True,3.7199999999999998,309.98,446.47999999999996,744.0,16.0,22.089375,1,5,16,0.07389199998897311,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S6,Cheapest,,A*,True,3.7199999999999998,309.98,446.47999999999996,744.0,16.0,22.089375,1,5,16,0.15490399999862348,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S6,Cheapest,,Hierarchical,True,3.7199999999999998,309.98,446.47999999999996,744.0,16.0,22.089375,1,5,14,0.18144899999583686,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S6,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.10036300000137999,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S6,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.1813190000063969,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S6,Safest,,Hierarchical,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,16,0.15561799999375125,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S6,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.05998899999326568,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S6,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.1392079999931184,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S6,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,13,0.16106100000001788,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S7,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.06233099999519709,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S7,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.10800800001220523,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S7,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,9,0.12436599999432474,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S7,Cheapest,,Dijkstra,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.07431899999232883,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found.
+scenarios,S7,Cheapest,,A*,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,16,0.1559509999964348,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S7,Cheapest,,Hierarchical,True,3.7199999999999998,281.3,404.9,744.0,16.0,22.089375,1,5,14,0.1689059999989695,0.0,,,IHC>JEA>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S7,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.10896099999513353,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S7,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.18278900000723297,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S7,Safest,,Hierarchical,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,16,0.15926300000046467,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S7,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.06513700000709832,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S7,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.15456699999560897,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S7,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,13,0.17512799999508388,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S8,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.06348099999797796,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S8,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.10988900000086232,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S8,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,9,0.12625300000479456,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S8,Cheapest,,Dijkstra,True,4.46,301.5,392.8,892.0,21.0,16.263951897600005,1,7,16,0.07773900000529466,0.0,,,IHC>JEA>DJI_PORT>ADD>MET>GDF>KST>ELO,Optimal route found.
+scenarios,S8,Cheapest,,A*,True,4.46,301.5,392.8,892.0,21.0,16.263951897600005,1,7,16,0.18959700000209523,0.0,,,IHC>JEA>DJI_PORT>ADD>MET>GDF>KST>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S8,Cheapest,,Hierarchical,True,4.513,335.09999999999997,446.8,902.6,19.0,18.630809999999997,1,6,18,0.1559680000013941,1.1883408071748864,,,IHC>JEA>DJI_PORT>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S8,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.09870099999886861,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S8,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,22,0.1943030000006729,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S8,Safest,,Hierarchical,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,16,0.1576060000019197,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S8,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.0620889999964902,0.0,,,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S8,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,12,0.13822700000787336,0.0,,,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S8,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,13,0.1589199999898483,0.0,,,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S9,Fastest,,Dijkstra,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,10,0.04285999999353862,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S9,Fastest,,A*,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,6,0.08639600000037717,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S9,Fastest,,Hierarchical,True,104.0,20.8,31.1,3900.0,9.0,46.2825,0,3,11,0.10176400000716512,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S9,Cheapest,,Dijkstra,True,4.46,301.5,392.8,892.0,21.0,16.263951897600005,1,7,11,0.048497000008751456,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>JEA>DJI_PORT>ADD>MET>GDF>KST>ELO,Optimal route found.
+scenarios,S9,Cheapest,,A*,True,4.46,301.5,392.8,892.0,21.0,16.263951897600005,1,7,11,0.10663399999089052,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>JEA>DJI_PORT>ADD>MET>GDF>KST>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S9,Cheapest,,Hierarchical,True,4.46,301.5,392.8,892.0,21.0,16.263951897600005,1,7,16,0.13040300000000116,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>JEA>DJI_PORT>ADD>MET>GDF>KST>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S9,Safest,,Dijkstra,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,19,0.07516300000531828,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S9,Safest,,A*,True,45.0,20.8,31.1,3900.0,9.0,46.2825,0,3,18,0.14146600000231047,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S9,Safest,,Hierarchical,True,80.0,130.6,161.9,2404.0,16.0,26.99763412499999,1,7,19,0.14083699998934662,77.77777777777779,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>JED_AIR>JED_PORT>PSD_PORT>ATB>OMD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.
+scenarios,S9,Balanced,,Dijkstra,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,10,0.044429999988437885,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>EBD>ELO,Optimal route found.
+scenarios,S9,Balanced,,A*,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,10,0.10040800000865602,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>EBD>ELO,Optimal route found with an admissible distance heuristic.
+scenarios,S9,Balanced,,Hierarchical,True,41.725,20.8,31.1,3900.0,9.0,46.2825,0,3,11,0.09759399999609286,0.0,,L04;L05;L10;L11;L12;L14;L15;L18;L27,IHC>DWC>EBD>ELO,Hierarchical route found; optimality is relative to the selected region sequence.

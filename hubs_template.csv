@@ -1,3 +1,0 @@
-node_id,name,latitude,longitude,region,node_type,description
-DUBAI_HUB,Dubai Humanitarian Hub,24.87,55.15,UAE,origin,Illustrative origin for the demonstration network.
-DWC_AIRPORT,Al Maktoum Airport (DWC),24.9,55.16,UAE,airport,Illustrative air gateway.
