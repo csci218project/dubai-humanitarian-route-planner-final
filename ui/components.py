@@ -35,7 +35,7 @@ _ICON_PATHS = {
 def icon(mode: str, size: int = 18) -> str:
     key = mode_key(mode)
     keys = {"air": ["air"], "sea": ["sea"], "road": ["road"], "land convoy": ["road"],
-            "sea + road": ["sea", "road"], "multimodal": ["sea", "road"]}.get(key, ["road"])
+            "sea + road": ["sea", "road"], "multimodal": ["sea", "road"], "transfer": ["road"]}.get(key, ["road"])
     return "".join(
         f'<svg class="hrp-icon" width="{size}" height="{size}" viewBox="0 0 24 24" aria-hidden="true">'
         f'<path fill="currentColor" d="{_ICON_PATHS[k]}"/></svg>'
@@ -59,12 +59,39 @@ def hours(value: float | None) -> str:
     return "–" if value is None else f"{value:,.1f} h"
 
 
+# Label units come from the network file (see configure_units).
+_UNITS = {"cost": "", "capacity": "t", "risk": "0–10"}
+
+
+def configure_units(metadata: dict) -> None:
+    """Set label units from the network's metadata: cost per tonne, capacity per week, risk scale."""
+    _UNITS["cost"] = "/t" if "tonne" in str(metadata.get("cost_unit", "")).lower() else ""
+    _UNITS["capacity"] = "t/week" if "week" in str(metadata.get("capacity_unit", "")).lower() else "t"
+    _UNITS["risk"] = "1–5" if str(metadata.get("risk_scale", "")).startswith("1") else "0–10"
+
+
+def cost_label() -> str:
+    return "Cost per tonne" if _UNITS["cost"] else "Illustrative cost"
+
+
+def risk_scale() -> str:
+    return _UNITS["risk"]
+
+
 def money(value: float | None) -> str:
-    return "–" if value is None else f"${value:,.0f}"
+    return "–" if value is None else f"${value:,.0f}{_UNITS['cost']}"
+
+
+def capacity(value: float | None) -> str:
+    return "–" if value is None else f"{value:g} {_UNITS['capacity']}"
 
 
 def points(value: float | None) -> str:
     return "–" if value is None else f"{value:,.1f}"
+
+
+def percent(value: float | None) -> str:
+    return "–" if value is None else f"{value:.0f}%"
 
 
 def signed_int(value: int) -> str:
@@ -74,7 +101,7 @@ def signed_int(value: int) -> str:
 def signed(value: float, unit: str = "", money_format: bool = False) -> str:
     sign = "+" if value > 0 else "−" if value < 0 else "±"
     magnitude = abs(value)
-    body = f"${magnitude:,.0f}" if money_format else f"{magnitude:,.1f}{unit}"
+    body = f"${magnitude:,.0f}{_UNITS['cost']}" if money_format else f"{magnitude:,.1f}{unit}"
     return f"{sign}{body}"
 
 
@@ -94,8 +121,9 @@ def masthead() -> None:
 
 def notice() -> None:
     st.html(
-        '<p class="hrp-notice"><strong>Synthetic teaching network.</strong> Times, costs, risk scores and '
-        "corridors are invented for algorithm demonstrations. Don’t use this tool to plan real aid movements.</p>"
+        '<p class="hrp-notice"><strong>Illustrative data.</strong> Locations are real, but transit times, costs, '
+        "risk and reliability are estimates for algorithm demonstrations. Don’t use this tool to plan real aid "
+        "movements.</p>"
     )
 
 
@@ -127,21 +155,22 @@ def dispatch(
     baseline: RouteResult | None,
     origin: str,
     destination: str,
-    closed_count: int,
+    disruptions: int,
 ) -> None:
-    """The headline: what was found, its numbers, and what the closures cost."""
+    """The headline: what was found, its numbers, and what the disruption costs."""
     origin_name = escape(network.nodes[origin].name)
     destination_name = escape(network.nodes[destination].name)
 
     if route is None or not route.success:
         if baseline is not None and baseline.success:
-            impact = ("Reopen a hub or link to restore a path; closed items are drawn in claret on the chart.")
+            impact = ("Reopen a hub or leg, or pick another scenario, to restore a path; closed items are drawn "
+                      "in claret on the chart.")
         else:
-            impact = "The destination can’t be reached even with every hub and link open."
+            impact = "The destination can’t be reached even with everything open."
         st.html(
             '<section class="hrp-dispatch is-failed" aria-live="polite">'
             f'<p class="hrp-lead">No route reaches <b>{destination_name}</b> from <b>{origin_name}</b> '
-            "with the current closures.</p>"
+            "under the current disruption.</p>"
             f'<p class="hrp-impact">{impact}</p></section>'
         )
         return
@@ -151,25 +180,24 @@ def dispatch(
         f'<b>{escape(route.algorithm)}</b> sends the shipment from <b>{origin_name}</b> to '
         f'<b>{destination_name}</b> in <b>{legs} leg{"s" if legs != 1 else ""}</b>.'
     )
-    capacity = f"{route.minimum_capacity_tonnes:g} t" if route.minimum_capacity_tonnes is not None else "–"
-    figures = [
-        ("Travel time", hours(route.total_time_hours)),
-        ("Illustrative cost", money(route.total_cost_usd)),
-        ("Risk points", points(route.total_risk_points)),
-        ("Route score", f"{route.objective_score:,.2f}"),
-        ("Bottleneck capacity", capacity),
-    ]
+    figures = [("Travel time", hours(route.total_time_hours))]
+    if route.total_time_p90_hours is not None:
+        figures.append(("Slow case (p90)", hours(route.total_time_p90_hours)))
+    figures += [(cost_label(), money(route.total_cost_usd)), ("Risk points", points(route.total_risk_points))]
+    if route.reliability_pct is not None:
+        figures.append(("Reliability", percent(route.reliability_pct)))
+    if network.transfer is not None:
+        figures.append(("Transfers", str(route.transfers)))
+    figures.append(("Route score", f"{route.objective_score:,.2f}"))
     figures_html = "".join(f'<div><dt>{label}</dt><dd>{value}</dd></div>' for label, value in figures)
 
-    if closed_count == 0:
-        impact = "Everything is open. Close a hub or link, in the sidebar or by clicking the chart, to see the route adapt."
+    if disruptions == 0:
+        impact = ("No disruption: everything is open and running normally. Pick a scenario, or close a hub or "
+                  "leg on the chart, to see the route adapt.")
     elif baseline is None or not baseline.success:
-        impact = "No open-network route exists to compare against."
-    elif route.edge_path == baseline.edge_path:
-        impact = (
-            f"The {closed_count} closure{'s' if closed_count != 1 else ''} "
-            "don’t touch this route; it matches the open-network route."
-        )
+        impact = "No normal-conditions route exists to compare against."
+    elif route.edge_path == baseline.edge_path and abs(route.objective_score - baseline.objective_score) < 1e-9:
+        impact = "The disruption doesn’t touch this route; it matches the route under normal conditions."
     else:
         deltas = [
             (route.total_time_hours - baseline.total_time_hours, "time", lambda d: signed(d, " h")),
@@ -178,12 +206,13 @@ def dispatch(
         ]
         changed = [f"<b>{fmt(d)}</b>" for d, _, fmt in deltas if abs(d) > 1e-9]
         same = [name for d, name, _ in deltas if abs(d) <= 1e-9]
+        verb = "changes the route" if route.edge_path != baseline.edge_path else "keeps the route but changes its numbers"
         if changed:
             listed = changed[0] if len(changed) == 1 else ", ".join(changed[:-1]) + " and " + changed[-1]
-            impact = f"Compared with the open network, the closures change the route: {listed}"
+            impact = f"Compared with normal conditions, the disruption {verb}: {listed}"
             impact += f"; {' and '.join(same)} {'is' if len(same) == 1 else 'are'} unchanged." if same else "."
         else:
-            impact = "The closures change the route, but time, cost and risk come out the same."
+            impact = f"The disruption {verb}, but time, cost and risk come out the same."
     st.html(
         '<section class="hrp-dispatch" aria-live="polite">'
         f'<p class="hrp-lead">{lead}</p>'
@@ -198,17 +227,23 @@ def journey(network: RouteNetwork, route: RouteResult | None) -> None:
     """The route as a numbered sequence of stops joined by transport legs."""
     if route is None or not route.success:
         return
+    transfer_at = network.transfer_stops(route.edge_path)
+    rule = network.transfer
     parts = []
     elapsed = 0.0
     last = len(route.node_path) - 1
     for index, node_id in enumerate(route.node_path):
         node = network.nodes[node_id]
         role = " is-origin" if index == 0 else " is-destination" if index == last else ""
+        transfer_here = 0 < index < last and transfer_at[index - 1]
+        transfer_note = f'<span class="hrp-stop-transfer">+ transfer {rule.time_hours:g} h</span>' if transfer_here else ""
         parts.append(
             f'<li class="hrp-stop{role}"><span class="hrp-roundel">{index + 1}</span>'
             f'<span class="hrp-stop-name">{escape(node.name)}</span>'
-            f'<span class="hrp-stop-time">{"Departs" if index == 0 else hours(elapsed)}</span></li>'
+            f'<span class="hrp-stop-time">{"Departs" if index == 0 else hours(elapsed)}</span>{transfer_note}</li>'
         )
+        if transfer_here:
+            elapsed += rule.time_hours
         if index < len(route.edge_path):
             edge = network.edges[route.edge_path[index]]
             elapsed += edge.time_hours
@@ -216,7 +251,7 @@ def journey(network: RouteNetwork, route: RouteResult | None) -> None:
                 f'<li class="hrp-leg" aria-label="{escape(mode_name(edge.mode))}, {edge.time_hours:g} hours">'
                 f'<span class="hrp-dash hrp-leg-line {mode_css(edge.mode)}"></span>'
                 f'<span class="hrp-leg-mode">{icon(edge.mode)}{escape(mode_name(edge.mode))}</span>'
-                f'<span class="hrp-leg-time">{edge.time_hours:g} h</span></li>'
+                f'<span class="hrp-leg-time">{edge.time_hours:,.1f} h</span></li>'
             )
     st.html(
         f'<ol class="hrp-journey" aria-label="Stops on the route found by {escape(route.algorithm)}">'
@@ -236,80 +271,94 @@ def inspector_empty() -> str:
 
 def inspector_node(network: RouteNetwork, node_id: str, closed: bool, role: str | None) -> str:
     node = network.nodes[node_id]
-    links = len(network.neighbors(node_id))
+    links = sum(1 for edge in network.edges.values() if node_id in (edge.source, edge.target))
+    noun = "leg" if network.directed else "link"
     status = "Closed" if closed else (role.title() if role else "Open")
     tone = "closed" if closed else "open"
     description = f'<p class="hrp-panel-text">{escape(node.description)}</p>' if node.description else ""
     return (
         f'<h3 class="hrp-panel-title">{escape(node.name)}</h3>'
         f'<p class="hrp-panel-meta">{escape(node_type_name(node.node_type))} in {escape(node.region)}, '
-        f'{links} link{"s" if links != 1 else ""}</p>'
+        f'{links} {noun}{"s" if links != 1 else ""}</p>'
         f'<p class="hrp-status hrp-status-{tone}">{status}</p>{description}'
     )
 
 
-def inspector_edge(network: RouteNetwork, edge_id: str, closed: bool, on_route: bool) -> str:
+def inspector_edge(network: RouteNetwork, edge_id: str, closed: bool, on_route: bool, change: str | None = None) -> str:
     edge = network.edges[edge_id]
     status = "Closed" if closed else ("On the route" if on_route else "Open")
     tone = "closed" if closed else "open"
-    rows = [
-        ("Mode", f"{icon(edge.mode, 16)} {escape(mode_name(edge.mode))}"),
-        ("Time", f"{edge.time_hours:g} h"),
-        ("Cost", money(edge.cost_usd)),
-        ("Risk", f"{edge.risk_score:g} of 10"),
-        ("Capacity", f"{edge.capacity_tonnes:g} t"),
-    ]
+    rows = [("Mode", f"{icon(edge.mode, 16)} {escape(mode_name(edge.mode))}"), ("Time", hours(edge.time_hours))]
+    if edge.time_hours_p90 is not None:
+        rows.append(("Slow case (p90)", hours(edge.time_hours_p90)))
+    rows += [("Cost", money(edge.cost_usd)), ("Risk", f"{edge.risk_score:g} ({_UNITS['risk']})"),
+             ("Capacity", capacity(edge.capacity_tonnes))]
+    if edge.reliability_pct is not None:
+        rows.append(("Reliability", percent(edge.reliability_pct)))
+    if edge.distance_km is not None:
+        rows.append(("Distance", f"{edge.distance_km:,.0f} km"))
+    if edge.corridor:
+        rows.append(("Corridor", escape(edge.corridor)))
+    if change:
+        rows.append(("This scenario", escape(change)))
     table = "".join(f"<tr><th scope='row'>{label}</th><td>{value}</td></tr>" for label, value in rows)
     notes = f'<p class="hrp-panel-text"><i>{escape(edge.notes)}</i></p>' if edge.notes else ""
     return (
-        f'<h3 class="hrp-panel-title">{escape(network.nodes[edge.source].name)} to '
+        f'<h3 class="hrp-panel-title">{escape(edge_id)}: {escape(network.nodes[edge.source].name)} to '
         f'{escape(network.nodes[edge.target].name)}</h3>'
         f'<p class="hrp-status hrp-status-{tone}">{status}</p>'
         f'<table class="hrp-facts">{table}</table>{notes}'
     )
 
 
-def legend(show_before: bool = False) -> None:
+def legend(modes: list[str] | None = None, show_before: bool = False, node_types: set[str] | None = None) -> None:
+    """The chart's key, listing only the modes and hub types this network has."""
+    order = ["air", "sea", "road", "transfer", "land convoy", "sea + road", "multimodal"]
+    present = sorted({mode_key(m) for m in (modes or order)}, key=lambda m: order.index(m) if m in order else len(order))
     rows = [('<span class="hrp-key-route"></span>', "Route that was found")]
     if show_before:
-        rows.append(('<span class="hrp-dash m-before"></span>', "Route before the closures"))
-    rows += [
-        ('<span class="hrp-dash m-closed"></span>', "Closed hub or link"),
-        ('<span class="hrp-dash m-air"></span>', "Air"),
-        ('<span class="hrp-dash m-sea"></span>', "Sea"),
-        ('<span class="hrp-dash m-road"></span>', "Road"),
-        ('<span class="hrp-dash m-convoy"></span>', "Land convoy"),
-        ('<span class="hrp-dash m-searoad"></span>', "Sea + road"),
-    ]
+        rows.append(('<span class="hrp-dash m-before"></span>', "Route under normal conditions"))
+    rows.append(('<span class="hrp-dash m-closed"></span>', "Closed hub or leg"))
+    rows += [(f'<span class="hrp-dash {mode_css(m)}"></span>', escape(mode_name(m))) for m in present]
     items = "".join(f"<li>{sample}<span>{label}</span></li>" for sample, label in rows)
+    symbols = [("origin", "Green circle: origin"), ("destination", "Gilt star: destination"),
+               ("airport", "Triangle: airport"), ("port", "Diamond: port"), ("hub", "Circle: hub"),
+               ("staging", "Square: staging area"), ("border", "Hexagon: border crossing")]
+    types = node_types or {kind for kind, _ in symbols}
+    sentence = ". ".join(text for kind, text in symbols if kind in types) + "."
     st.html(
         '<div class="hrp-key"><h3 class="hrp-panel-title">Key</h3>'
-        f'<ul>{items}</ul>'
-        '<p class="hrp-panel-text">Green circle: origin. Gilt star: destination. '
-        "Triangle: airport. Diamond: port. Square: staging area.</p></div>"
+        f'<ul>{items}</ul><p class="hrp-panel-text">{sentence}</p></div>'
     )
 
 
-# ---- Before and after the closures ------------------------------------------------
+# ---- Before and after the disruption ----------------------------------------------
 
-def before_after(network: RouteNetwork, before: RouteResult, after: RouteResult | None) -> None:
-    """Same request and weights, solved with everything open and with the current closures."""
+def before_after(network: RouteNetwork, before: RouteResult, after: RouteResult | None,
+                 expected: str | None = None) -> None:
+    """Same request and weights, solved under normal conditions and under the current disruption."""
+    show_transfers = network.transfer is not None
+    columns = 7 if show_transfers else 6
+
     def stops(route: RouteResult) -> str:
         return " → ".join(escape(network.nodes[node_id].name) for node_id in route.node_path)
 
     def row(label: str, route: RouteResult | None) -> str:
         if route is None or not route.success:
             return (f"<tr><th scope='row'>{label}</th><td class='hrp-route-cell'><span class='hrp-bad'>No route</span>"
-                    "</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>")
+                    "</td>" + "<td>–</td>" * (columns - 1) + "</tr>")
+        transfers = f"<td>{route.transfers}</td>" if show_transfers else ""
         return (f"<tr><th scope='row'>{label}</th><td class='hrp-route-cell'>{stops(route)}</td>"
-                f"<td>{route.hops}</td><td>{hours(route.total_time_hours)}</td><td>{money(route.total_cost_usd)}</td>"
-                f"<td>{points(route.total_risk_points)}</td><td>{route.nodes_expanded}</td></tr>")
+                f"<td>{route.hops}</td>{transfers}<td>{hours(route.total_time_hours)}</td>"
+                f"<td>{money(route.total_cost_usd)}</td><td>{points(route.total_risk_points)}</td>"
+                f"<td>{route.nodes_expanded}</td></tr>")
 
     if after is not None and after.success:
+        transfers = f"<td>{signed_int(after.transfers - before.transfers)}</td>" if show_transfers else ""
         change = (
             "<tr class='hrp-total'><th scope='row'>Change</th>"
             f"<td class='hrp-route-cell'>{'Same route' if after.edge_path == before.edge_path else 'Re-routed'}</td>"
-            f"<td>{signed_int(after.hops - before.hops)}</td>"
+            f"<td>{signed_int(after.hops - before.hops)}</td>{transfers}"
             f"<td>{signed(after.total_time_hours - before.total_time_hours, ' h')}</td>"
             f"<td>{signed(after.total_cost_usd - before.total_cost_usd, money_format=True)}</td>"
             f"<td>{signed(after.total_risk_points - before.total_risk_points)}</td>"
@@ -317,18 +366,20 @@ def before_after(network: RouteNetwork, before: RouteResult, after: RouteResult 
         )
     else:
         change = ("<tr class='hrp-total'><th scope='row'>Change</th><td class='hrp-route-cell'>"
-                  "The closures cut the destination off.</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>")
-    algorithm = escape(before.algorithm)
+                  "The disruption cuts the destination off.</td>" + "<td>–</td>" * (columns - 1) + "</tr>")
+    head_transfers = "<th scope='col'>Transfers</th>" if show_transfers else ""
+    expected_html = (f'<p class="hrp-panel-text"><b>The data’s expected reroute for this scenario:</b> '
+                     f"{escape(expected)}</p>") if expected else ""
     st.html(
-        '<div class="hrp-section"><h2>Before and after the closures</h2>'
-        f'<p class="hrp-section-note">Same request and weights, solved by {algorithm} with everything open '
-        "and with the current closures.</p></div>"
+        '<div class="hrp-section"><h2>Before and after the disruption</h2>'
+        f'<p class="hrp-section-note">Same request and weights, solved by {escape(before.algorithm)} under normal '
+        "conditions and under the current disruption.</p></div>"
         '<div class="hrp-ledger-wrap"><table class="hrp-ledger hrp-ledger-compare">'
-        "<thead><tr><th scope='col'><span class='hrp-visually-hidden'>Network</span></th><th scope='col'>Route</th>"
-        "<th scope='col'>Legs</th><th scope='col'>Time</th><th scope='col'>Cost</th><th scope='col'>Risk points</th>"
-        "<th scope='col'>Nodes explored</th></tr></thead>"
-        f"<tbody>{row('Before (all open)', before)}{row('After (with closures)', after)}</tbody>"
-        f"<tfoot>{change}</tfoot></table></div>"
+        "<thead><tr><th scope='col'><span class='hrp-visually-hidden'>Conditions</span></th><th scope='col'>Route</th>"
+        f"<th scope='col'>Legs</th>{head_transfers}<th scope='col'>Time</th><th scope='col'>Cost</th>"
+        "<th scope='col'>Risk</th><th scope='col'>Explored</th></tr></thead>"
+        f"<tbody>{row('Before (normal)', before)}{row('After (disrupted)', after)}</tbody>"
+        f"<tfoot>{change}</tfoot></table></div>{expected_html}"
     )
 
 
@@ -358,6 +409,8 @@ def comparison_ledger(results: list[RouteResult]) -> None:
             return points(result.total_risk_points)
         if measure == "legs":
             return str(result.hops)
+        if measure == "transfers":
+            return str(result.transfers)
         if measure == "expanded":
             return str(result.nodes_expanded)
         return f"{result.runtime_ms:.3f}"
@@ -365,7 +418,7 @@ def comparison_ledger(results: list[RouteResult]) -> None:
     measures = [
         ("found", "Route found"), ("score", "Route score"), ("gap", "Gap to Dijkstra"),
         ("time", "Travel time"), ("cost", "Illustrative cost"), ("risk", "Risk points"),
-        ("legs", "Legs"), ("expanded", "States expanded"), ("runtime", "Runtime (ms)"),
+        ("legs", "Legs"), ("transfers", "Transfers"), ("expanded", "States expanded"), ("runtime", "Runtime (ms)"),
     ]
     head = "".join(f"<th scope='col'>{escape(r.algorithm)}</th>" for r in results)
     body = "".join(
@@ -413,31 +466,41 @@ def comparison_summary(results: list[RouteResult]) -> None:
 
 def legs_ledger(network: RouteNetwork, route: RouteResult | None) -> None:
     if route is None or not route.success:
-        st.html('<p class="hrp-panel-text">No route to itemise with the current closures.</p>')
+        st.html('<p class="hrp-panel-text">No route to itemise under the current disruption.</p>')
         return
+    transfer_at = network.transfer_stops(route.edge_path)
+    rule = network.transfer
     rows = []
     elapsed = 0.0
     for index, edge_id in enumerate(route.edge_path, start=1):
         edge = network.edges[edge_id]
-        # Edges are undirected; show each leg in the direction of travel.
+        # Show each leg in the direction of travel.
         start, end = route.node_path[index - 1], route.node_path[index]
+        if index > 1 and transfer_at[index - 2]:
+            elapsed += rule.time_hours
+            rows.append(
+                f"<tr class='hrp-transfer-row'><td></td><td colspan='2'>Transfer at {escape(network.nodes[start].name)}</td>"
+                f"<td class='hrp-mode'>Change of mode</td><td>{rule.time_hours:g}</td><td>{elapsed:,.1f}</td>"
+                f"<td>{rule.cost_usd:,.0f}</td><td>{rule.risk_score:g}</td><td>–</td></tr>"
+            )
         elapsed += edge.time_hours
         rows.append(
-            f"<tr><td>{index}</td><td>{escape(network.nodes[start].name)}</td>"
+            f"<tr><td>{escape(edge_id)}</td><td>{escape(network.nodes[start].name)}</td>"
             f"<td>{escape(network.nodes[end].name)}</td>"
             f"<td class='hrp-mode'>{icon(edge.mode, 16)} {escape(mode_name(edge.mode))}</td>"
-            f"<td>{edge.time_hours:g}</td><td>{elapsed:,.1f}</td><td>{edge.cost_usd:,.0f}</td>"
+            f"<td>{edge.time_hours:,.1f}</td><td>{elapsed:,.1f}</td><td>{edge.cost_usd:,.0f}</td>"
             f"<td>{edge.risk_score:g}</td><td>{edge.capacity_tonnes:g}</td></tr>"
         )
-    capacity = f"{route.minimum_capacity_tonnes:g}" if route.minimum_capacity_tonnes is not None else "–"
+    bottleneck = f"{route.minimum_capacity_tonnes:g}" if route.minimum_capacity_tonnes is not None else "–"
     totals = (
         "<tr class='hrp-total'><th scope='row' colspan='4'>Route total</th>"
         f"<td>{route.total_time_hours:,.1f}</td><td></td><td>{route.total_cost_usd:,.0f}</td>"
-        f"<td>{route.total_risk_points:g}</td><td>{capacity} min.</td></tr>"
+        f"<td>{route.total_risk_points:g}</td><td>{bottleneck} min.</td></tr>"
     )
     head = ("<tr><th scope='col'>Leg</th><th scope='col'>From</th><th scope='col'>To</th><th scope='col'>Mode</th>"
-            "<th scope='col'>Hours</th><th scope='col'>Elapsed</th><th scope='col'>Cost (USD)</th>"
-            "<th scope='col'>Risk</th><th scope='col'>Capacity (t)</th></tr>")
+            "<th scope='col'>Hours</th><th scope='col'>Elapsed</th>"
+            f"<th scope='col'>Cost (USD{_UNITS['cost']})</th><th scope='col'>Risk</th>"
+            f"<th scope='col'>Capacity ({_UNITS['capacity']})</th></tr>")
     regions = ""
     if route.abstract_regions:
         regions = ('<p class="hrp-panel-text">Region plan used by hierarchical search: '

@@ -803,3 +803,55 @@
 .hrp-ledger-compare thead th:nth-child(2) {
   text-align: left;
 }
+
+/* ---- Transfers between modes -------------------------------------------------- */
+
+.hrp-dash.m-transfer {
+  background: repeating-linear-gradient(90deg, var(--hrp-dash-colour) 0 9px, transparent 9px 12px,
+    var(--hrp-dash-colour) 12px 15px, transparent 15px 18px);
+}
+
+.hrp-stop-transfer {
+  margin-top: 0.2rem;
+  padding: 0 0.4rem;
+  font-size: 0.8rem;
+  font-style: italic;
+  background: rgba(169, 133, 58, 0.2);
+}
+
+.hrp-ledger-legs tr.hrp-transfer-row td {
+  font-style: italic;
+  color: var(--hrp-sepia);
+  background: rgba(169, 133, 58, 0.08);
+}
+
+/* Keep the wide tables inside the page: names wrap, numbers stay on one line. */
+.hrp-ledger-compare th,
+.hrp-ledger-compare td,
+.hrp-ledger-legs th,
+.hrp-ledger-legs td {
+  padding: 0.42rem 0.6rem;
+}
+
+.hrp-ledger-compare td.hrp-route-cell {
+  min-width: 12rem;
+  max-width: 26rem;
+}
+
+.hrp-ledger-legs td:nth-child(2),
+.hrp-ledger-legs td:nth-child(3) {
+  min-width: 6.5rem;
+}
+
+.hrp-ledger-legs td:nth-child(4) {
+  min-width: 5.5rem;
+}
+
+/* Routes in this network can have 7 stops; keep the strip within a laptop screen. */
+.hrp-stop {
+  min-width: 5.6rem;
+}
+
+.hrp-leg {
+  min-width: 3.4rem;
+}

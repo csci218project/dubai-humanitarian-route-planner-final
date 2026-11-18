@@ -7,7 +7,7 @@ import math
 import unittest
 from pathlib import Path
 
-from humanitarian_route_planner.algorithms import a_star, compare_algorithms
+from humanitarian_route_planner.algorithms import a_star
 from humanitarian_route_planner.models import CostWeights
 from humanitarian_route_planner.network import RouteNetwork
 from ui.chart import _ranges, build_route_figure, chart_label, place_labels, schematic_positions
@@ -84,23 +84,6 @@ class RouteFigureTests(unittest.TestCase):
         self.assertEqual(len(figure.layout.annotations), len(NETWORK.nodes))
 
 
-class ExtendedNetworkTests(unittest.TestCase):
-    def setUp(self):
-        self.network = RouteNetwork.from_json(ROOT / "data" / "extended_network.json")
-
-    def test_keeps_every_sample_hub_and_link(self):
-        self.assertTrue(set(NETWORK.nodes) <= set(self.network.nodes))
-        self.assertTrue(set(NETWORK.edges) <= set(self.network.edges))
-
-    def test_a_star_matches_dijkstra(self):
-        results = {r.algorithm: r for r in compare_algorithms(self.network, "DUBAI_HUB", "RELIEF_DESTINATION", CostWeights())}
-        self.assertTrue(results["A*"].success)
-        self.assertAlmostEqual(results["A*"].objective_score, results["Dijkstra"].objective_score)
-
-    def test_chart_places_every_hub(self):
-        self.assertEqual(set(schematic_positions(self.network)), set(self.network.nodes))
-
-
 class OpeningSequenceTests(unittest.TestCase):
     def test_every_frame_in_the_manifest_exists(self):
         from ui.sequence import SEQUENCE_DIR, load_manifest
@@ -116,7 +99,7 @@ class OpeningSequenceTests(unittest.TestCase):
 
 
 class AppSmokeTests(unittest.TestCase):
-    """Run app.py headlessly with Streamlit's testing harness."""
+    """Run app.py headlessly with Streamlit's testing harness, on the Dubai to El Obeid network."""
 
     def setUp(self):
         from streamlit.testing.v1 import AppTest
@@ -124,11 +107,17 @@ class AppSmokeTests(unittest.TestCase):
 
     def test_app_runs_without_errors(self):
         self.assertFalse(self.app.exception)
+        self.assertEqual((self.app.session_state.origin, self.app.session_state.destination), ("IHC", "ELO"))
 
     def test_scenario_loads_its_closures(self):
-        self.app.selectbox(key="scenario").set_value("Compound disruption").run()
-        self.assertEqual(set(self.app.session_state.closed_nodes), {"DWC_AIRPORT", "JEBEL_ALI_PORT"})
-        self.assertEqual(self.app.session_state.closed_edges, ["E14_ELARISH_DESTINATION"])
+        self.app.selectbox(key="scenario").set_value("S9: Compound: S1 + S2").run()
+        self.assertEqual(self.app.session_state.closed_edges,
+                         ["L04", "L05", "L10", "L11", "L12", "L14", "L15", "L18", "L27"])
+        self.assertFalse(self.app.exception)
+
+    def test_scenario_with_slower_legs_runs(self):
+        self.app.selectbox(key="scenario").set_value("S6: Rainy season road degradation").run()
+        self.assertEqual(self.app.session_state.closed_edges, [])
         self.assertFalse(self.app.exception)
 
     def test_moving_a_slider_clears_the_preset(self):
@@ -136,26 +125,18 @@ class AppSmokeTests(unittest.TestCase):
         self.assertIsNone(self.app.session_state.preset)
 
     def test_closed_origin_offers_a_reopen_button(self):
-        self.app.multiselect(key="closed_nodes").set_value(["DUBAI_HUB"]).run()
-        self.assertIn("Reopen Dubai Humanitarian Hub", [b.label for b in self.app.button])
-
-    def test_switching_network_resets_the_request(self):
-        names = self.app.selectbox(key="network_name").options
-        self.app.multiselect(key="closed_nodes").set_value(["CAIRO_HUB"]).run()
-        self.app.selectbox(key="network_name").set_value(names[-1]).run()
-        self.assertFalse(self.app.exception)
-        self.assertEqual(self.app.session_state.closed_nodes, [])
-        self.assertEqual(self.app.session_state.origin, "DUBAI_HUB")
+        self.app.multiselect(key="closed_nodes").set_value(["IHC"]).run()
+        self.assertIn("Reopen Dubai humanitarian logistics hub (origin)", [b.label for b in self.app.button])
 
     def test_closing_a_hub_runs_the_before_and_after_view(self):
-        self.app.multiselect(key="closed_nodes").set_value(["CAIRO_HUB"]).run()
+        self.app.multiselect(key="closed_nodes").set_value(["EBD"]).run()
         self.assertFalse(self.app.exception)
 
     def test_inspector_closes_and_reopens_a_hub(self):
-        self.app.session_state["inspected"] = ("node", "CAIRO_HUB")
+        self.app.session_state["inspected"] = ("node", "CAI")
         self.app.run()
         self.app.button(key="inspector_toggle").click().run()
-        self.assertEqual(self.app.session_state.closed_nodes, ["CAIRO_HUB"])
+        self.assertEqual(self.app.session_state.closed_nodes, ["CAI"])
         self.app.button(key="inspector_toggle").click().run()
         self.assertEqual(self.app.session_state.closed_nodes, [])
 

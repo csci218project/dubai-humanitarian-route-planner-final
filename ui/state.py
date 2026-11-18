@@ -15,7 +15,6 @@ from __future__ import annotations
 import streamlit as st
 
 from humanitarian_route_planner.network import RouteNetwork
-from humanitarian_route_planner.scenarios import SCENARIOS
 
 # (time, cost, risk) weights for each preset.
 PRESETS: dict[str, tuple[float, float, float]] = {
@@ -26,6 +25,17 @@ PRESETS: dict[str, tuple[float, float, float]] = {
 }
 ALGORITHMS = ["A*", "Dijkstra", "Hierarchical"]
 CHART_KEY = "route_chart"
+
+
+def scenario_specs(network: RouteNetwork) -> dict[str, dict]:
+    """The network's disruption scenarios by label, from its data file.
+
+    Each scenario lists legs it closes (close_edges), and legs it makes slower
+    (time_mult) or more expensive (cost_mult). A network without scenarios gets
+    a single "No disruption" entry.
+    """
+    specs = {spec["label"]: spec for spec in network.metadata.get("scenarios", []) if "label" in spec}
+    return specs or {"No disruption": {"label": "No disruption", "close_edges": [], "time_mult": {}, "cost_mult": {}}}
 
 
 def default_endpoints(network: RouteNetwork) -> tuple[str, str]:
@@ -47,7 +57,7 @@ def init_state(network: RouteNetwork) -> None:
         "w_time": PRESETS["Balanced"][0],
         "w_cost": PRESETS["Balanced"][1],
         "w_risk": PRESETS["Balanced"][2],
-        "scenario": next(iter(SCENARIOS)),
+        "scenario": next(iter(scenario_specs(network))),
         "closed_nodes": [],
         "closed_edges": [],
         "highlight": "A*",
@@ -81,7 +91,7 @@ def sync_preset_from_weights() -> None:
 def reset_for_network(network: RouteNetwork) -> None:
     """Another network was picked: start again from its defaults, with nothing closed."""
     st.session_state.origin, st.session_state.destination = default_endpoints(network)
-    st.session_state.scenario = next(iter(SCENARIOS))
+    st.session_state.scenario = next(iter(scenario_specs(network)))
     st.session_state.closed_nodes = []
     st.session_state.closed_edges = []
     st.session_state.inspected = None
@@ -90,6 +100,9 @@ def reset_for_network(network: RouteNetwork) -> None:
 def keep_valid_state(network: RouteNetwork) -> None:
     """Drop anything the current network doesn't have. Runs before the widgets are drawn."""
     origin, destination = default_endpoints(network)
+    specs = scenario_specs(network)
+    if st.session_state.get("scenario") not in specs:
+        st.session_state.scenario = next(iter(specs))
     if st.session_state.origin not in network.nodes:
         st.session_state.origin = origin
     if st.session_state.destination not in network.nodes:
@@ -105,18 +118,22 @@ def keep_valid_state(network: RouteNetwork) -> None:
         st.session_state.inspected = None
 
 
-def apply_scenario() -> None:
-    """Scenario picked: load its closures into the two editable closure lists."""
-    scenario = SCENARIOS[st.session_state.scenario]
-    st.session_state.closed_nodes = sorted(scenario["blocked_nodes"])
-    st.session_state.closed_edges = sorted(scenario["blocked_edges"])
+def apply_scenario(specs: dict[str, dict]) -> None:
+    """Scenario picked: load its closures into the two editable closure lists.
+
+    Its slower and dearer legs aren't editable; the app reads them from the
+    selected scenario on every run.
+    """
+    spec = specs[st.session_state.scenario]
+    st.session_state.closed_nodes = sorted(spec.get("close_nodes", []))
+    st.session_state.closed_edges = sorted(spec.get("close_edges", []))
 
 
-def scenario_is_edited() -> bool:
-    scenario = SCENARIOS[st.session_state.scenario]
+def scenario_is_edited(specs: dict[str, dict]) -> bool:
+    spec = specs[st.session_state.scenario]
     return (
-        set(st.session_state.closed_nodes) != set(scenario["blocked_nodes"])
-        or set(st.session_state.closed_edges) != set(scenario["blocked_edges"])
+        set(st.session_state.closed_nodes) != set(spec.get("close_nodes", []))
+        or set(st.session_state.closed_edges) != set(spec.get("close_edges", []))
     )
 
 

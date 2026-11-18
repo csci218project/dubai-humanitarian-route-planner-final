@@ -2,22 +2,22 @@
 
 **CSCI218 Foundations of Artificial Intelligence | Autumn 2026 | University of Wollongong in Dubai**
 
-An educational route-planning prototype for Project B, “Humanitarian Route Planner,” listed in the supplied Dubai Humanitarian project spreadsheet. It compares three AI search approaches over a small multimodal logistics graph and demonstrates how an unavailable airport, port, hub, or corridor changes the route.
+An educational route-planning prototype for Project B, “Humanitarian Route Planner,” listed in the supplied Dubai Humanitarian project spreadsheet. It compares three AI search approaches on a relief network from Dubai to El Obeid in Sudan (23 hubs, 36 one-way legs) and shows how closures, slow-downs and cost shocks change the route.
 
-> **Important limitation:** All example connections, transport times, costs, capacities, and risk scores are synthetic. They are not verified facts or operational recommendations. This app contains no live access permissions, schedules, security assessments, official Dubai Humanitarian data, or verified routes. Do not use it to plan actual aid movements.
+> **Important limitation:** The network is illustrative and was compiled by the project team. Locations are real; transit times, costs, capacities, risk scores and reliability are planning estimates, not official Dubai Humanitarian data, schedules or security assessments. Do not use it to plan actual aid movements.
 
 ## Features
 
 - Streamlit interface in a Victorian chart-room style that updates instantly as settings change (no run button).
 - Scroll-driven 3D opening: a Victorian globe turns as you scroll, from a Gemini-generated video.
-- Air, sea, road, and illustrative land-convoy connections.
+- One-way air, sea, road and transfer legs. When cargo changes mode at a hub without its own transfer leg, the route pays a transfer in time and cost.
 - Dijkstra, A*, and hierarchical (multi-layered) search.
 - Configurable route objective balancing time, cost, and ordinal risk points.
-- Preconfigured disruption scenarios and custom unavailable nodes/edges.
-- Route details for stops, links, time, cost, risk, score, runtime, and expanded states, plus the cost of the current closures compared with the open network.
+- Ten disruption scenarios from the data (closures, slow-downs, cost shocks and a combined case), plus your own closures.
+- Route details: stops, legs, typical and slow-case (p90) time, cost per tonne, risk, reliability, transfers, score, runtime and expanded states, plus what the disruption costs compared with normal conditions.
 - Clickable schematic chart: click a hub or link to inspect it, close or reopen it, or make it the origin or destination.
-- Before/after view: closing anything draws the route before the closures, faded, on the chart, and compares both routes in a table (legs, time, cost, risk, nodes explored).
-- Two networks: the 10-hub sample and a 40-hub extended network with real airport and port locations (see Data).
+- Before/after view: under any disruption, the normal-conditions route is drawn faded on the chart and both routes are compared in a table (legs, transfers, time, cost, risk, nodes explored), next to the reroute the data expects.
+- Network data kept in a spreadsheet the team can edit, converted to the app's format by a script (see Data).
 - Leg-by-leg journey strip and an account-book ledger comparing all three algorithms.
 - Unit tests for correctness, closures, malformed inputs, metrics, and the front end.
 - Seeded benchmark script producing trial-level CSV and summary statistics.
@@ -31,17 +31,16 @@ dubai-humanitarian-route-planner-final/
 ├── static/fonts/                      # Bundled fonts (SIL Open Font Licence) so the demo works offline
 ├── static/sequence/                   # Opening globe frames (WebP) and manifest.json
 ├── .streamlit/config.toml             # Theme colours and fonts
-├── render.yaml                        # Deployment settings for Render
 ├── requirements.txt                   # Runtime dependencies
-├── requirements-dev.txt               # Extra tools (frame extraction)
+├── requirements-dev.txt               # Extra tools (data import, frame extraction, plots)
 ├── __init__.py                        # Project overview
-├── data/sample_network.json           # Synthetic network and data disclaimer
-├── data/extended_network.json         # 40-hub network: real locations, illustrative link values
+├── data/hrp_network_data.xlsx         # The network data: locations, legs, scenarios
+├── data/hrp_network.json              # The same data in the app's format (generated)
+├── data/sample_network.json           # Small synthetic network used by the tests
 ├── humanitarian_route_planner/
 │   ├── models.py                      # Domain objects and route result
 │   ├── network.py                     # Input validation, graph, distances, metrics
-│   ├── algorithms.py                  # Dijkstra, A*, hierarchical search
-│   └── scenarios.py                   # Preset disruptions
+│   └── algorithms.py                  # Dijkstra, A*, hierarchical search
 ├── build_network.py                   # CSV-to-JSON network builder (Shahir)
 ├── hubs_template.csv                  # Network hubs as a spreadsheet (Shahir)
 ├── links_template.csv                 # Network links as a spreadsheet (Shahir)
@@ -54,7 +53,7 @@ dubai-humanitarian-route-planner-final/
 ├── tests/                             # Core and front-end tests
 ├── scripts/run_benchmarks.py          # Repeatable experiments
 ├── scripts/make_sequence.py           # Turns a video into the opening's frame sequence
-├── scripts/build_extended_network.py  # Rebuilds the extended network from public data
+├── scripts/import_hrp_data.py         # Converts the spreadsheet into data/hrp_network.json
 ├── results/                           # Example/generated benchmark CSV files
 └── docs/                              # Architecture, experiment, rubric, viva and UI notes
 ```
@@ -98,11 +97,11 @@ Open the local URL printed by Streamlit, usually `http://localhost:8501`.
 
 ## Use the prototype
 
-1. Pick the network (sample or extended), the origin and the generic affected-area destination in the sidebar.
+1. Pick the origin and destination in the sidebar (by default, the Dubai hub to El Obeid).
 2. Choose a priority preset (Fastest, Cheapest, Safest, Balanced) or fine-tune the time, cost and risk sliders.
-3. Choose a disruption scenario, or add closed hubs and links.
-4. Read the summary: the route found, its totals, and what the closures cost compared with the open network.
-5. Click any hub, or the diamond halfway along a link, to inspect it and close or reopen it. The route updates at once, and the route before the closures appears faded on the chart with a before/after table.
+3. Choose one of the ten scenarios from the data, or close hubs and legs yourself.
+4. Read the summary: the route found, its totals (time, slow case, cost per tonne, risk, reliability, transfers) and what the disruption costs compared with normal conditions.
+5. Click any hub, or the diamond halfway along a link, to inspect it and close or reopen it. The route updates at once, and the normal-conditions route appears faded on the chart with a before/after table.
 6. Switch the chart between the A*, Dijkstra and hierarchical routes, and open the tabs to compare algorithms, read the leg-by-leg plan, or browse the network data.
 
 See docs/ui_guide.md for how the front end works.
@@ -117,29 +116,33 @@ edge_score = time_weight * time_hours
            + risk_weight * risk_points
 ```
 
-The route score is the sum of edge scores. The USD scaling stops large numeric units from automatically dominating, but it does not make dollars, hours, and risk equivalent in real life. Risk is an ordinal 0–10 teaching score, not a probability or a security assessment. All weights must be non-negative and at least one must be positive. Raw time/cost/risk totals are shown separately to expose trade-offs.
+The route score is the sum of edge scores, plus any transfers. Cost is in US dollars per tonne; dividing by 1,000 stops large numbers from automatically dominating, but it does not make dollars, hours and risk equivalent in real life. Risk is the data's ordinal 1–5 score per leg, not a probability or a security assessment.
+
+**Transfers.** When cargo arrives at a hub by one of air, sea or road and leaves by another, and the hub has no transfer leg for that change, the route adds a transfer step scored the same way: 3.5 h, $18/t and risk 1, the median of the data's seven transfer legs. Legs whose mode is "transfer" already include that work, so they never add another. All weights must be non-negative and at least one must be positive. Raw time/cost/risk totals are shown separately to expose trade-offs.
 
 ## Algorithms
 
 - **Dijkstra:** uses non-negative generalized edge costs and a priority queue; optimal for the configured graph. Standard adjacency-list/binary-heap complexity is `O((V + E) log V)`.
 - **A\*:** prioritizes `g(n) + h(n)`. Its heuristic uses straight-line distance times the minimum active edge-score-per-kilometre ratio. Under the provided distance assumptions this is an admissible lower bound. It should match Dijkstra's optimal score, although runtime savings are not guaranteed on a tiny graph.
+- **States with transfers:** on a network with a transfer rule, all three searches use the state (hub, mode the cargo arrived on), so they know when the next leg needs a transfer. Transfers only add cost, so the A* heuristic stays admissible. Legs are one-way when the data says so.
 - **Hierarchical search:** first chooses a sequence of regions in an abstract graph, then searches the detailed network constrained to that region sequence. This can limit search but may exclude a globally better route or fail to realize an abstract path; this trade-off is part of the analysis.
 
 ## Data
 
-The app offers two networks; switch between them in the sidebar.
+The app uses one network: relief cargo from the Dubai humanitarian logistics hub (IHC) to the El Obeid distribution hub in Sudan (ELO), with Port Sudan, Gedaref and Kosti as alternative destinations. The team keeps it in `data/hrp_network_data.xlsx`:
 
-- **Sample network** (`data/sample_network.json`): the original 10 hubs and 15 links. All values are synthetic.
-- **Extended network** (`data/extended_network.json`): the sample plus 30 real airports and ports, 40 hubs and 197 links in total. Locations come from OurAirports and UN/LOCODE, air links follow scheduled-route pairs in OpenFlights data, and sea distances follow shipping lanes (searoute). Every time, cost, risk and capacity value is an illustrative assumption: time and cost are fitted to the sample's own links so new links are on the same scale, and risk follows a fixed rule by mode and distance from the destination. New hubs reach the destination only through the sample's corridor links.
+- **locations** (23): airports, sea ports, hubs, border crossings, the origin and the destination, with coordinates.
+- **network_legs** (36): one-way legs with distance, typical and slow-case (p90) transit time, cost per tonne, weekly capacity, a 1–5 risk score, reliability % and corridor.
+- **disruption_scenarios** (10): S0 (baseline) to S9, built from four actions: CLOSE a leg, TIME_MULT (slower), COST_MULT (dearer) and COMBINE (other scenarios together). Each scenario also gives the reroute planners would expect.
 
-To rebuild the extended network (it downloads the public data first):
+The app reads `data/hrp_network.json`. After editing the spreadsheet, regenerate it:
 
 ```
 pip install -r requirements-dev.txt
-python scripts/build_extended_network.py
+python scripts/import_hrp_data.py
 ```
 
-Sources and licences: OurAirports (public domain), OpenFlights route data (ODbL 1.0), UN/LOCODE (UNECE) and searoute (Apache 2.0). These give locations, routes and distances, not humanitarian transit times, costs or risk, so those stay documented assumptions; Dubai Humanitarian's anonymised data would replace them if shared.
+`data/sample_network.json` is a small synthetic network kept for the unit tests.
 
 ## Opening sequence
 
@@ -190,24 +193,22 @@ from humanitarian_route_planner.network import RouteNetwork
 from humanitarian_route_planner.models import CostWeights
 from humanitarian_route_planner.algorithms import compare_algorithms
 
-network = RouteNetwork.from_json(Path("data/sample_network.json"))
-weights = CostWeights(time=1.0, cost=0.75, risk=2.0)
+network = RouteNetwork.from_json(Path("data/hrp_network.json"))
+scenario = {s["id"]: s for s in network.metadata["scenarios"]}["S5"]   # El Obeid airport closed
+disrupted = network.with_adjustments(scenario["time_mult"], scenario["cost_mult"])
 results = compare_algorithms(
-    network,
-    start="DUBAI_HUB",
-    goal="RELIEF_DESTINATION",
-    weights=weights,
-    blocked_nodes={"DWC_AIRPORT"},
-    blocked_edges=set(),
+    disrupted, start="IHC", goal="ELO", weights=CostWeights(time=1.0, cost=0.75, risk=2.0),
+    blocked_edges=set(scenario["close_edges"]),
 )
 for result in results:
-    print(result.algorithm, result.success, result.objective_score, result.node_path)
+    print(result.algorithm, result.success, round(result.objective_score, 2), result.transfers, result.node_path)
 ```
 
 ## Limitations
 
 - No live route data, schedules, geocoding, map tiles, customs/permit rules, road traffic, loading/handling, inventory, fleet availability, or shipment-specific capacity checks.
-- The graph is small and undirected. Some cross-region connections are invented to demonstrate alternative paths; this does not establish that a corridor exists, is open, or is permitted.
+- The network is small and its values are estimates. A leg in the data does not establish that a corridor exists, is open, or is permitted.
+- Reliability multiplies leg reliabilities as if legs were independent, and the slow case adds every leg's p90, which overstates a route's real 90th-percentile time.
 - Capacity is only displayed as an edge property. The system does not allocate cargo or check packing and handling constraints.
 - Risk is an ordinal teaching score added over links. It is not a calibrated probability or current security assessment.
 - Real operational use would require authoritative timestamped data, domain validation, uncertainty handling, security review, and an authorized human decision-maker.

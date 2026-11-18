@@ -274,6 +274,9 @@ def build_route_figure(
     """
     fig = go.Figure()
     large = len(network.nodes) > 16   # bigger networks: lighter links, fewer labels
+    cost_unit = "/t" if "tonne" in str(network.metadata.get("cost_unit", "")).lower() else ""
+    capacity_unit = "t/week" if "week" in str(network.metadata.get("capacity_unit", "")).lower() else "t"
+    risk_max = 5 if str(network.metadata.get("risk_scale", "")).startswith("1") else 10
     route_edges = set(route.edge_path) if route and route.success else set()
     route_nodes = set(route.node_path) if route and route.success else set()
 
@@ -351,8 +354,8 @@ def build_route_figure(
         handle_data.append([
             "edge", edge_id,
             network.nodes[edge.source].name, network.nodes[edge.target].name,
-            mode_name(edge.mode), f"{edge.time_hours:g}", f"{edge.cost_usd:,.0f}",
-            f"{edge.risk_score:g}", f"{edge.capacity_tonnes:g}", status,
+            mode_name(edge.mode), f"{edge.time_hours:.1f}", f"{edge.cost_usd:,.0f}{cost_unit}",
+            f"{edge.risk_score:g}", f"{edge.capacity_tonnes:g} {capacity_unit}", status, edge_id,
         ])
         if closed:
             handle_symbol.append("x"); handle_color.append(CLARET); handle_line.append(CLARET); handle_size.append(12)
@@ -365,9 +368,9 @@ def build_route_figure(
         marker={"symbol": handle_symbol, "size": handle_size, "color": handle_color,
                 "line": {"color": handle_line, "width": 1.4}},
         hovertemplate=(
-            "<b>%{customdata[2]}</b> to <b>%{customdata[3]}</b><br>"
+            "<b>%{customdata[10]}: %{customdata[2]}</b> to <b>%{customdata[3]}</b><br>"
             "%{customdata[4]}: %{customdata[5]} h, $%{customdata[6]}<br>"
-            "Risk %{customdata[7]} of 10, capacity %{customdata[8]} t<br>"
+            "Risk %{customdata[7]} of " + str(risk_max) + ", capacity %{customdata[8]}<br>"
             "<i>%{customdata[9]}. Click to inspect.</i><extra></extra>"
         ),
         **_no_dimming(),
@@ -387,7 +390,7 @@ def build_route_figure(
     all_segments = [(positions[e.source], positions[e.target]) for e in network.edges.values()]
     label_positions = place_labels(positions, labels, (xr, yr), all_segments)
 
-    symbol_by_type = {"airport": "triangle-up", "port": "diamond", "staging": "square"}
+    symbol_by_type = {"airport": "triangle-up", "port": "diamond", "staging": "square", "border": "hexagon"}
     for closed_group in (False, True):
         ids = [n for n in network.nodes if (n in closed_nodes) == closed_group]
         if not ids:

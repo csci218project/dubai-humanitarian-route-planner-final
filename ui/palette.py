@@ -35,6 +35,7 @@ MODE_DASH = {
     "land convoy": "dashdot",
     "sea + road": "longdashdot",
     "multimodal": "longdashdot",
+    "transfer": "dashdot",
 }
 
 # CSS classes in ui/theme.css that redraw the same dash patterns (in px) for
@@ -46,6 +47,7 @@ MODE_CSS = {
     "land convoy": "m-convoy",
     "sea + road": "m-searoad",
     "multimodal": "m-searoad",
+    "transfer": "m-transfer",
 }
 
 MODE_NAMES = {
@@ -55,6 +57,7 @@ MODE_NAMES = {
     "land convoy": "Land convoy",
     "sea + road": "Sea + road",
     "multimodal": "Multimodal",
+    "transfer": "Transfer",
 }
 
 NODE_TYPE_NAMES = {
@@ -64,6 +67,7 @@ NODE_TYPE_NAMES = {
     "port": "Sea port",
     "hub": "Logistics hub",
     "staging": "Staging area",
+    "border": "Border crossing",
 }
 
 

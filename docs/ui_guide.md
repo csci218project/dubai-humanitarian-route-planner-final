@@ -20,7 +20,7 @@ changes how routes are computed.
 ## Why there is no "run" button
 
 Streamlit reruns `app.py` from top to bottom after every interaction. Dijkstra,
-A* and hierarchical search solve this 10-hub network in well under a
+A* and hierarchical search solve this 23-hub network in about a
 millisecond, so the app simply re-solves on every rerun. Whatever is on screen
 always matches the current settings.
 
@@ -83,22 +83,24 @@ again. With "reduce motion" switched on in the operating system, the opening
 shows a single still frame. If the frames are missing, the app falls back to
 the plain title.
 
-## Before and after the closures
+## Scenarios and the before/after view
 
-When anything is closed, the app solves the same request twice with the same
-algorithm: once with everything open (before) and once with the closures
-(after). The before route is drawn on the chart as a faded long-dashed line
-under the current route, and a table compares the two routes' legs, time,
-cost, risk and nodes explored, with the change underneath.
+The scenario list comes from the network file. Picking one fills the closure
+lists with the legs it closes (you can still edit them), and the app runs the
+network with that scenario's slower or dearer legs
+(`RouteNetwork.with_adjustments`). Under any disruption the app solves the same
+request twice with the same algorithm: under normal conditions (before) and
+disrupted (after). The before route is drawn as a faded long-dashed line under
+the current route, and a table compares legs, transfers, time, cost, risk and
+nodes explored, next to the reroute the data expects for that scenario.
 
-## Two networks
+## Transfers on screen
 
-The sidebar switches between the 10-hub sample and the 40-hub extended
-network (`data/extended_network.json`, built by
-`scripts/build_extended_network.py`). Switching resets the origin,
-destination and closures. On the bigger network the chart labels only the hubs
-that matter (origin, destination, routes, closed and inspected hubs) and
-draws unused links lighter; hover over any hub to see its name.
+When a route changes mode at a hub without its own transfer leg, the journey
+strip marks the stop with "+ transfer", the leg-by-leg plan lists the transfer
+as its own row, and the totals include it. The chart labels only the hubs that
+matter (origin, destination, routes, closed and inspected hubs); hover over any
+hub to see its name.
 
 ## Design choices
 

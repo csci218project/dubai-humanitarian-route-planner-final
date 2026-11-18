@@ -5,10 +5,19 @@ from __future__ import annotations
 import json
 import math
 from collections import defaultdict
+from dataclasses import replace
 from pathlib import Path
 from typing import Iterable
 
-from .models import CostWeights, Edge, Node
+from .models import CostWeights, Edge, Node, TransferRule
+
+# Changing between these modes at a hub costs a transfer (see TransferRule).
+MAIN_MODES = frozenset({"air", "sea", "road"})
+
+
+def mode_key(mode: str) -> str:
+    """Normalise a mode name, e.g. 'Road' -> 'road'."""
+    return mode.strip().lower()
 
 
 # Approximate multipliers used only to give the schematic map a mode-aware
@@ -20,6 +29,7 @@ MODE_DISTANCE_FACTORS = {
     "land convoy": 1.18,
     "sea + road": 1.30,
     "multimodal": 1.25,
+    "transfer": 1.18,
 }
 
 
@@ -36,7 +46,12 @@ def haversine_km(a: Node, b: Node) -> float:
 
 
 class RouteNetwork:
-    """Validated, undirected transport network for route-planning experiments."""
+    """Validated transport network for route-planning experiments.
+
+    Links are two-way unless the data's metadata sets "directed": true, in
+    which case each leg runs only from its source to its target. A "transfer"
+    entry in the metadata turns on the transfer rule for mode changes.
+    """
 
     def __init__(self, nodes: Iterable[Node], edges: Iterable[Edge], metadata: dict | None = None):
         node_list = list(nodes)
@@ -48,6 +63,12 @@ class RouteNetwork:
         self.nodes = {node.node_id: node for node in node_list}
         self.edges = {edge.edge_id: edge for edge in edge_list}
         self.metadata = metadata or {}
+        self.directed = bool(self.metadata.get("directed", False))
+        rule = self.metadata.get("transfer")
+        self.transfer = TransferRule(
+            time_hours=float(rule["time_hours"]), cost_usd=float(rule["cost_usd"]),
+            risk_score=float(rule.get("risk_score", 0.0)),
+        ) if rule else None
         self._adjacency: dict[str, list[Edge]] = defaultdict(list)
         self._validate_and_index()
 
@@ -78,8 +99,13 @@ class RouteNetwork:
                 raise ValueError(f"Edge {edge.edge_id} has invalid time, cost, or capacity.")
             if not 0 <= edge.risk_score <= 10:
                 raise ValueError(f"Edge {edge.edge_id} risk_score must be between 0 and 10.")
+            if edge.time_hours_p90 is not None and edge.time_hours_p90 < edge.time_hours:
+                raise ValueError(f"Edge {edge.edge_id} slow-case time is below its typical time.")
+            if edge.reliability_pct is not None and not 0 < edge.reliability_pct <= 100:
+                raise ValueError(f"Edge {edge.edge_id} reliability must be between 0 and 100%.")
             self._adjacency[edge.source].append(edge)
-            self._adjacency[edge.target].append(edge)
+            if not self.directed:
+                self._adjacency[edge.target].append(edge)
 
     def neighbors(
         self,
@@ -89,9 +115,9 @@ class RouteNetwork:
     ) -> list[tuple[str, Edge]]:
         """Get usable adjacent nodes and connecting edges.
 
-        Connections are modelled as bidirectional in this demonstrator. A
-        production system would need direction, schedules, border rules,
-        vehicle restrictions, and confirmed corridor permissions.
+        Legs are one-way when the network is directed, two-way otherwise. A
+        production system would also need schedules, border rules, vehicle
+        restrictions, and confirmed corridor permissions.
         """
         blocked_nodes = blocked_nodes or set()
         blocked_edges = blocked_edges or set()
@@ -128,8 +154,57 @@ class RouteNetwork:
             and edge.target not in blocked_nodes
         ]
 
+    # ---- transfers between modes --------------------------------------------
+
+    def needs_transfer(self, arrived_mode: str | None, next_mode: str) -> bool:
+        """True when cargo switches between air, sea and road with no transfer leg."""
+        if self.transfer is None or arrived_mode is None:
+            return False
+        arrived, leaving = mode_key(arrived_mode), mode_key(next_mode)
+        return arrived in MAIN_MODES and leaving in MAIN_MODES and arrived != leaving
+
+    def transfer_cost(self, arrived_mode: str | None, next_mode: str, weights: CostWeights) -> float:
+        """Weighted score of the transfer needed before taking a leg (0 if none)."""
+        if not self.needs_transfer(arrived_mode, next_mode):
+            return 0.0
+        rule = self.transfer
+        return weights.score(rule.time_hours, rule.cost_usd, rule.risk_score)
+
+    def transfer_stops(self, edge_ids: list[str]) -> list[bool]:
+        """For each stop between two legs of a route: does the cargo change mode there?"""
+        legs = [self.edges[edge_id] for edge_id in edge_ids]
+        return [self.needs_transfer(a.mode, b.mode) for a, b in zip(legs, legs[1:])]
+
+    # ---- scenarios -------------------------------------------------------------
+
+    def with_adjustments(
+        self,
+        time_mult: dict[str, float] | None = None,
+        cost_mult: dict[str, float] | None = None,
+    ) -> "RouteNetwork":
+        """A copy of the network with some legs slower or more expensive (a scenario)."""
+        time_mult, cost_mult = time_mult or {}, cost_mult or {}
+        unknown = (set(time_mult) | set(cost_mult)) - set(self.edges)
+        if unknown:
+            raise ValueError(f"Unknown leg IDs in scenario: {sorted(unknown)}")
+        if not time_mult and not cost_mult:
+            return self
+        edges = []
+        for edge in self.edges.values():
+            slow, dear = float(time_mult.get(edge.edge_id, 1.0)), float(cost_mult.get(edge.edge_id, 1.0))
+            if slow == 1.0 and dear == 1.0:
+                edges.append(edge)
+                continue
+            edges.append(replace(
+                edge,
+                time_hours=edge.time_hours * slow,
+                time_hours_p90=None if edge.time_hours_p90 is None else edge.time_hours_p90 * slow,
+                cost_usd=edge.cost_usd * dear,
+            ))
+        return RouteNetwork(self.nodes.values(), edges, self.metadata)
+
     def route_totals(self, edge_ids: list[str], weights: CostWeights) -> dict[str, float | None]:
-        """Sum the raw route metrics and generalized objective score."""
+        """Sum the raw route metrics and generalized objective score, transfers included."""
         selected = [self.edges[edge_id] for edge_id in edge_ids]
         if not selected:
             return {
@@ -138,11 +213,27 @@ class RouteNetwork:
                 "total_cost_usd": 0.0,
                 "total_risk_points": 0.0,
                 "minimum_capacity_tonnes": None,
+                "transfers": 0,
+                "total_time_p90_hours": None,
+                "reliability_pct": None,
             }
+        transfers = sum(self.transfer_stops(edge_ids))
+        rule = self.transfer
+        extra_time = transfers * rule.time_hours if transfers else 0.0
+        extra_cost = transfers * rule.cost_usd if transfers else 0.0
+        extra_risk = transfers * rule.risk_score if transfers else 0.0
+        extra_score = transfers * weights.score(rule.time_hours, rule.cost_usd, rule.risk_score) if transfers else 0.0
+        has_p90 = all(edge.time_hours_p90 is not None for edge in selected)
+        has_reliability = all(edge.reliability_pct is not None for edge in selected)
         return {
-            "objective_score": sum(weights.edge_cost(edge) for edge in selected),
-            "total_time_hours": sum(edge.time_hours for edge in selected),
-            "total_cost_usd": sum(edge.cost_usd for edge in selected),
-            "total_risk_points": sum(edge.risk_score for edge in selected),
+            "objective_score": sum(weights.edge_cost(edge) for edge in selected) + extra_score,
+            "total_time_hours": sum(edge.time_hours for edge in selected) + extra_time,
+            "total_cost_usd": sum(edge.cost_usd for edge in selected) + extra_cost,
+            "total_risk_points": sum(edge.risk_score for edge in selected) + extra_risk,
             "minimum_capacity_tonnes": min(edge.capacity_tonnes for edge in selected),
+            "transfers": transfers,
+            # Slow case if every leg runs at its p90 time; transfers are added at their usual time.
+            "total_time_p90_hours": sum(edge.time_hours_p90 for edge in selected) + extra_time if has_p90 else None,
+            # Chance that every leg runs as planned (legs treated as independent).
+            "reliability_pct": 100.0 * math.prod(edge.reliability_pct / 100.0 for edge in selected) if has_reliability else None,
         }

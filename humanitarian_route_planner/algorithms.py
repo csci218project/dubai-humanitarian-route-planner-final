@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Callable, Hashable, Iterable
 
 from .models import CostWeights, Edge, RouteResult
-from .network import RouteNetwork, haversine_km
+from .network import RouteNetwork, haversine_km, mode_key
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,36 @@ def _heuristic_scale(
         distance = network.edge_distance_km(edge)
         ratios.append(weights.edge_cost(edge) / distance)
     return min(ratios) if ratios else 0.0
+
+
+def _node_states(
+    network: RouteNetwork,
+    start: str,
+    goal: str,
+    weights: CostWeights,
+    disabled_nodes: set[str],
+    disabled_edges: set[str],
+):
+    """Search states for Dijkstra and A*: the hub alone, or (hub, mode arrived on).
+
+    The pair is needed when the network charges transfers: whether the next leg
+    costs a transfer depends on how the cargo reached the hub. Returns the start
+    state, the goal test, the transitions and a function from a state to its hub.
+    """
+    if network.transfer is None:
+        def transitions(node_id: str) -> Iterable[Transition]:
+            for neighbor, edge in network.neighbors(node_id, disabled_nodes, disabled_edges):
+                yield Transition(neighbor, weights.edge_cost(edge), edge)
+
+        return start, (lambda state: state == goal), transitions, (lambda state: str(state))
+
+    def mode_transitions(state: tuple[str, str | None]) -> Iterable[Transition]:
+        node_id, arrived = state
+        for neighbor, edge in network.neighbors(node_id, disabled_nodes, disabled_edges):
+            cost = weights.edge_cost(edge) + network.transfer_cost(arrived, edge.mode, weights)
+            yield Transition((neighbor, mode_key(edge.mode)), cost, edge)
+
+    return (start, None), (lambda state: state[0] == goal), mode_transitions, (lambda state: str(state[0]))
 
 
 def _best_first_search(
@@ -141,6 +171,9 @@ def _result(
         runtime_ms=runtime_ms,
         abstract_regions=abstract_regions or [],
         message=message,
+        transfers=int(totals["transfers"] or 0),
+        total_time_p90_hours=totals["total_time_p90_hours"],
+        reliability_pct=totals["reliability_pct"],
     )
 
 
@@ -186,15 +219,14 @@ def dijkstra(
     if error:
         return _result(network, "Dijkstra", False, None, [], None, 0, started, weights, error)
 
-    def transitions(node_id: str) -> Iterable[Transition]:
-        for neighbor, edge in network.neighbors(node_id, disabled_nodes, disabled_edges):
-            yield Transition(neighbor, weights.edge_cost(edge), edge)
-
+    start_state, is_goal, transitions, node_of = _node_states(
+        network, start, goal, weights, disabled_nodes, disabled_edges
+    )
     path, edges, score, expanded = _best_first_search(
-        start_state=start,
-        is_goal=lambda state: state == goal,
+        start_state=start_state,
+        is_goal=is_goal,
         transitions=transitions,
-        state_node_id=lambda state: str(state),
+        state_node_id=node_of,
         heuristic=lambda _state: 0.0,
         algorithm_name="Dijkstra",
     )
@@ -220,19 +252,19 @@ def a_star(
         return _result(network, "A*", False, None, [], None, 0, started, weights, error)
 
     scale = _heuristic_scale(network, weights, disabled_nodes, disabled_edges)
+    start_state, is_goal, transitions, node_of = _node_states(
+        network, start, goal, weights, disabled_nodes, disabled_edges
+    )
 
-    def heuristic(node_id: str) -> float:
-        return scale * haversine_km(network.nodes[node_id], network.nodes[goal])
-
-    def transitions(node_id: str) -> Iterable[Transition]:
-        for neighbor, edge in network.neighbors(node_id, disabled_nodes, disabled_edges):
-            yield Transition(neighbor, weights.edge_cost(edge), edge)
+    def heuristic(state) -> float:
+        # Transfers only add cost, so the distance bound stays admissible.
+        return scale * haversine_km(network.nodes[node_of(state)], network.nodes[goal])
 
     path, edges, score, expanded = _best_first_search(
-        start_state=start,
-        is_goal=lambda state: state == goal,
+        start_state=start_state,
+        is_goal=is_goal,
         transitions=transitions,
-        state_node_id=lambda state: str(state),
+        state_node_id=node_of,
         heuristic=heuristic,
         algorithm_name="A*",
     )
@@ -258,10 +290,11 @@ def _region_path(
         if region_a == region_b:
             continue
         pair = (region_a, region_b)
-        reverse_pair = (region_b, region_a)
         cost = weights.edge_cost(edge)
         abstract_edges[pair] = min(cost, abstract_edges.get(pair, float("inf")))
-        abstract_edges[reverse_pair] = min(cost, abstract_edges.get(reverse_pair, float("inf")))
+        if not network.directed:
+            reverse_pair = (region_b, region_a)
+            abstract_edges[reverse_pair] = min(cost, abstract_edges.get(reverse_pair, float("inf")))
 
     abstract_adj: dict[str, dict[str, float]] = {}
     for (region_a, region_b), cost in abstract_edges.items():
@@ -337,11 +370,13 @@ def hierarchical_search(
 
     region_index = {region: i for i, region in enumerate(abstract_regions)}
     scale = _heuristic_scale(network, weights, disabled_nodes, disabled_edges)
-    start_state = (start, 0)
+    use_modes = network.transfer is not None   # then states also carry the mode arrived on
+    start_state = (start, 0, None) if use_modes else (start, 0)
     goal_index = len(abstract_regions) - 1
 
-    def transitions(state: tuple[str, int]) -> Iterable[Transition]:
-        node_id, index = state
+    def transitions(state: tuple) -> Iterable[Transition]:
+        node_id, index = state[0], state[1]
+        arrived = state[2] if use_modes else None
         current_region = abstract_regions[index]
         for neighbor, edge in network.neighbors(node_id, disabled_nodes, disabled_edges):
             neighbor_region = network.nodes[neighbor].region
@@ -351,9 +386,11 @@ def hierarchical_search(
                 next_index = index + 1
             else:
                 continue
-            yield Transition((neighbor, next_index), weights.edge_cost(edge), edge)
+            cost = weights.edge_cost(edge) + network.transfer_cost(arrived, edge.mode, weights)
+            target = (neighbor, next_index, mode_key(edge.mode)) if use_modes else (neighbor, next_index)
+            yield Transition(target, cost, edge)
 
-    def heuristic(state: tuple[str, int]) -> float:
+    def heuristic(state: tuple) -> float:
         return scale * haversine_km(network.nodes[state[0]], network.nodes[goal])
 
     path, edges, score, detailed_expanded = _best_first_search(
