@@ -11,7 +11,7 @@ won't lose marks for an unavailable mentor if your attempts are documented.
 |---|---|---|---|
 | 09/11/2026 | Email, via the subject coordinator | Muhaimeen Shahir | Dubai Humanitarian sent five points of feedback on the proposal |
 | 12/11/2026 | Email, via the subject coordinator | Muhaimeen Shahir | Asked Dubai Humanitarian for network data |
-| 16/11/2026 | Email, via the subject coordinator | Subject Coordinator | Dubai Humanitarian provided `hrp_network_data.xlsx`: 23 locations, 36 one-way legs and 10 disruption scenarios |
+| 16/11/2026 | Email, via the subject coordinator | Muhaimeen Shahir | Dubai Humanitarian provided `hrp_network_data.xlsx`: 23 locations, 36 one-way legs and 10 disruption scenarios |
 
 ## Requirements traced to feedback
 
