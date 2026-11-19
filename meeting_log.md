@@ -5,20 +5,13 @@ requirements traced back to them, and evidence that feedback changed the
 design. Log every attempt to reach the mentor as well; the guidelines say you
 won't lose marks for an unavailable mentor if your attempts are documented.
 
-## Meetings
-
-| # | Date | Attendees | Agenda | Decisions | Actions (owner, due) |
-|---|---|---|---|---|---|
-| 1 | [date] | [names] | [agenda] | [decisions] | [actions] |
-| 2 | [date] | [names] | [agenda] | [decisions] | [actions] |
-
 ## Contact attempts
 
 | Date | Channel | Who | Outcome |
 |---|---|---|---|
-| [date] | Email, via the subject coordinator | Muhaimeen Shahir | Dubai Humanitarian sent five points of feedback on the proposal (traced below) |
-| [date] | [channel] | Muhaimeen Shahir | Asked Dubai Humanitarian for network data; [their reply] |
-| [date] | [channel] | [who] | Dubai Humanitarian provided `hrp_network_data.xlsx`: 23 locations, 36 one-way legs and 10 disruption scenarios |
+| 09/11/2026 | Email, via the subject coordinator | Muhaimeen Shahir | Dubai Humanitarian sent five points of feedback on the proposal |
+| 12/11/2026 | Email, via the subject coordinator | Muhaimeen Shahir | Asked Dubai Humanitarian for network data |
+| 16/11/2026 | Email, via the subject coordinator | Subject Coordinator | Dubai Humanitarian provided `hrp_network_data.xlsx`: 23 locations, 36 one-way legs and 10 disruption scenarios |
 
 ## Requirements traced to feedback
 
