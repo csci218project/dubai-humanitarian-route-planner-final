@@ -1,6 +1,6 @@
 # Mentor meeting log (Appendix B)
 
-Needed for the industry engagement bonus: at least two logged meetings,
+Needed for the industry engagement bonus: 
 requirements traced back to them, and evidence that feedback changed the
 design. Log every attempt to reach the mentor as well; the guidelines say you
 won't lose marks for an unavailable mentor if your attempts are documented.
