@@ -1,0 +1,26 @@
+Shahir: what to push
+
+File in this zip:
+  meeting_log.md
+
+Before you push
+- Fill in every [bracketed] part: the dates, the two meetings (date,
+  attendees, agenda, decisions, actions) and Dubai Humanitarian's reply to
+  the data request. Only log meetings that happened.
+- The bonus also needs Dubai Humanitarian's feedback form; check you have it.
+
+Easiest way, on GitHub in the browser
+  Open meeting_log.md in the repository, click the pencil (Edit), paste in
+  the filled-in version, choose "Create a new branch", then "Propose changes"
+  and create the pull request.
+
+Or from Windows Command Prompt, in your copy of the repository
+    git checkout main
+    git pull
+    git checkout -b shahir/meeting-log
+    tar -xf "%USERPROFILE%\Downloads\shahir-meeting-log.zip"
+    (fill in the brackets in meeting_log.md)
+    git add meeting_log.md
+    git commit -m "Log Dubai Humanitarian feedback, data handover and meetings"
+    git push -u origin shahir/meeting-log
+  Then click "Compare & pull request" on GitHub.
